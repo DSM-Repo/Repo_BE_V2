@@ -1,5 +1,6 @@
 package com.example.repo_be_v2.domain.user.domain;
 
+import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
