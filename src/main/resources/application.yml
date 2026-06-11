@@ -7,4 +7,9 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto:
+
+  data:
+    redis:
+      host: ${REDIS_HOST)
+      port: ${REDIS_PORT)
