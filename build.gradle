@@ -37,6 +37,7 @@ dependencies {
 
     // DB
     runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
     // REDIS
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
