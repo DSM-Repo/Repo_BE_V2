@@ -1,8 +1,6 @@
 package com.example.repo_be_v2.domain.resume.presentation.dto.response;
 
-import com.example.repo_be_v2.domain.resume.domain.enms.ResumeSubmissionStatus;
-
-import java.time.LocalDateTime;
+import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
 
 public record ResumeSubmitResponse(
         String resumeId,

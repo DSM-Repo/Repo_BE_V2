@@ -50,6 +50,14 @@ public class ResumeController {
         return resumeService.submitResume(userId);
     }
 
+    // 이력서 제출 취소
+    @PostMapping("/submit/cancel")
+    public ResumeSubmitResponse cancelSubmit(
+            @RequestParam Long userId
+    ) {
+        return resumeService.cancelSubmit(userId);
+    }
+
     // 이력서 공개 여부 변경
     @PatchMapping("/visibility")
     public ResumeVisibilityResponse changeVisibility(

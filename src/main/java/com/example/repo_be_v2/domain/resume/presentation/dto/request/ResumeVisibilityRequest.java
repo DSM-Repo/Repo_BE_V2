@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record ResumeVisibilityRequest(
 
-        @NotNull
+        @NotNull(message = "공개 여부가 필요합니다.")
         Boolean isPublic
 
 ) {

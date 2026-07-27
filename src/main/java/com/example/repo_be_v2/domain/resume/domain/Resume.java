@@ -1,13 +1,14 @@
 package com.example.repo_be_v2.domain.resume.domain;
 
-import com.example.repo_be_v2.domain.resume.domain.enms.ResumeSubmissionStatus;
+import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
+import com.example.repo_be_v2.global.error.exception.ErrorCode;
+import com.example.repo_be_v2.global.error.exception.REPOException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -66,6 +67,8 @@ public class Resume {
             List<ResumePage> pages,
             LocalDateTime savedAt
     ) {
+        assertEditable();
+
         this.introduce = introduce;
         this.portfolioUrl = portfolioUrl;
         this.pages = pages;
@@ -73,36 +76,40 @@ public class Resume {
     }
 
     public void autoSave(List<ResumePage> pages, LocalDateTime savedAt) {
+        assertEditable();
+
         this.pages = pages;
         this.savedAt = savedAt;
     }
 
-    public void changeVisibility(boolean isPublic) {
-        this.isPublic = isPublic;
+    public void changeVisibility(boolean isPublic, LocalDateTime now) {
+        if (isPublic) {
+            release(now);
+        } else {
+            unrelease();
+        }
     }
 
     public void submit(LocalDateTime submittedAt) {
-        if (submissionStatus == ResumeSubmissionStatus.SUBMITTED) {
-            throw new IllegalStateException("이미 제출된 이력서입니다.");
-        }
-
-        if (submissionStatus == ResumeSubmissionStatus.RELEASED) {
-            throw new IllegalStateException("이미 공개된 이력서입니다.");
-        }
-
-        if (submissionStatus == ResumeSubmissionStatus.DELETED) {
-            throw new IllegalStateException("삭제된 이력서는 제출할 수 없습니다.");
-        }
+        assertEditable();
 
         this.submissionStatus = ResumeSubmissionStatus.SUBMITTED;
         this.submittedAt = submittedAt;
     }
 
-    public void release(LocalDateTime releasedAt) {
+    public void cancelSubmit() {
         if (submissionStatus != ResumeSubmissionStatus.SUBMITTED) {
-            throw new IllegalStateException(
-                    "제출된 이력서만 공개할 수 있습니다."
-            );
+            throw new REPOException(ErrorCode.RESUME_NOT_SUBMITTED);
+        }
+
+        this.submissionStatus = ResumeSubmissionStatus.ONGOING;
+        this.submittedAt = null;
+    }
+
+    public void release(LocalDateTime releasedAt) {
+        if (submissionStatus != ResumeSubmissionStatus.SUBMITTED
+                && submissionStatus != ResumeSubmissionStatus.RELEASED) {
+            throw new REPOException(ErrorCode.RESUME_NOT_SUBMITTED);
         }
 
         this.submissionStatus = ResumeSubmissionStatus.RELEASED;
@@ -110,9 +117,24 @@ public class Resume {
         this.releasedAt = releasedAt;
     }
 
+    public void unrelease() {
+        if (submissionStatus == ResumeSubmissionStatus.RELEASED) {
+            this.submissionStatus = ResumeSubmissionStatus.SUBMITTED;
+            this.releasedAt = null;
+        }
+
+        this.isPublic = false;
+    }
+
     public void delete(LocalDateTime deletedAt) {
         this.submissionStatus = ResumeSubmissionStatus.DELETED;
         this.isPublic = false;
         this.deletedAt = deletedAt;
+    }
+
+    private void assertEditable() {
+        if (submissionStatus != ResumeSubmissionStatus.ONGOING) {
+            throw new REPOException(ErrorCode.RESUME_NOT_EDITABLE);
+        }
     }
 }
