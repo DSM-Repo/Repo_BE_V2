@@ -1,0 +1,36 @@
+package com.example.repo_be_v2.domain.user.service;
+
+import com.example.repo_be_v2.domain.user.domain.User;
+import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
+import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
+import com.example.repo_be_v2.domain.user.presentation.dto.response.UserResponse;
+import com.example.repo_be_v2.global.exception.UserException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class UserSignUpService {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public UserResponse execute(UserSignUpRequest request) {
+        if (userRepository.existsByStudentId(request.studentId())) {
+            throw new UserException(HttpStatus.CONFLICT, "이미 사용 중인 학번입니다.");
+        }
+
+        User user = User.builder()
+                .studentName(request.studentName())
+                .studentId(request.studentId())
+                .studentPassword(passwordEncoder.encode(request.password()))
+                .studentMajor(request.studentMajor())
+                .role(request.role())
+                .build();
+
+        return UserResponse.from(userRepository.save(user));
+    }
+}
