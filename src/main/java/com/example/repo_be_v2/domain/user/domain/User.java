@@ -13,13 +13,13 @@ import lombok.*;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false, name = "student_id")
+    @Column(nullable = false, name = "id")
     private Long id;
 
     @Column(nullable = false , name = "student_name" , length = 4)
     private String studentName;
 
-    @Column(name = "student_id",nullable = false, unique = true)
+    @Column(name = "student_id", nullable = false, unique = true, length = 30)
     private String studentId;
 
     @Column(name = "student_password", nullable = false)

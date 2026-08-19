@@ -7,9 +7,13 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto:
+      ddl-auto: ${DDL_AUTO:update}
 
   data:
     redis:
-      host: ${REDIS_HOST)
-      port: ${REDIS_PORT)
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+jwt:
+  secret: ${JWT_SECRET:change-this-development-secret-key-32bytes}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}
