@@ -15,12 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserSignUpService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserEmailVerifyService userEmailVerifyService;
 
     @Transactional
     public UserResponse execute(UserSignUpRequest request) {
-        if (userRepository.existsByStudentEmail(request.studentEmail())) {
+        String email = request.studentEmail();
+        if (userRepository.existsByStudentEmail(email)) {
             throw new EmailAlreadyExistsException();
         }
+        userEmailVerifyService.validateVerified(email);
 
         User user = User.builder()
                 .studentName(request.studentName())
@@ -33,6 +36,8 @@ public class UserSignUpService {
                 .role(request.role())
                 .build();
 
-        return UserResponse.from(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+        userEmailVerifyService.clearVerification(email);
+        return UserResponse.from(savedUser);
     }
 }

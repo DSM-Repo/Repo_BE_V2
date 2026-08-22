@@ -2,6 +2,7 @@ package com.example.repo_be_v2.domain.user.service;
 
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
 import com.example.repo_be_v2.domain.user.exception.EmailAlreadyExistsException;
+import com.example.repo_be_v2.domain.user.exception.EmailSendFailedException;
 import com.example.repo_be_v2.domain.user.exception.EmailVerificationRequestLimitException;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.EmailVerificationSendRequest;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,8 @@ public class UserEmailSendService {
     @Value("${spring.mail.username}")
     private String emailSender;
 
-    public void execute(EmailVerificationSendRequest emailVerificationSendRequest) {
-        String email = emailVerificationSendRequest.email();
+    public void execute(EmailVerificationSendRequest request) {
+        String email = request.email();
         if (userRepository.existsByStudentEmail(email)) { //이메일 중복 확인
             throw new EmailAlreadyExistsException();
         }
@@ -55,6 +56,7 @@ public class UserEmailSendService {
         }catch (MailException mailException){
             redisTemplate.delete(cooldownKey);
             redisTemplate.delete(codeKey);
+            throw new EmailSendFailedException(mailException);
         }
     }
     private SimpleMailMessage createMessage(String email, String code) {
