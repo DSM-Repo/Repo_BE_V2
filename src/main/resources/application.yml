@@ -7,7 +7,11 @@ spring:
 
   jpa:
     hibernate:
+<<<<<<< HEAD
       ddl-auto: ${DDL_AUTO:validate}
+=======
+      ddl-auto: ${DDL_AUTO:update}
+>>>>>>> origin/1-feat-user-login
 
   data:
     redis:
@@ -15,5 +19,9 @@ spring:
       port: ${REDIS_PORT:6379}
 
 jwt:
+<<<<<<< HEAD
   secret: ${JWT_SECRET}
+=======
+  secret: ${JWT_SECRET:change-this-development-secret-key-32bytes}
+>>>>>>> origin/1-feat-user-login
   access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}
