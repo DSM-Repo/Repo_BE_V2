@@ -6,7 +6,10 @@ import com.example.repo_be_v2.domain.user.domain.enums.Role;
 public record UserResponse(
         Long id,
         String studentName,
-        String studentId,
+        String studentEmail,
+        Integer studentGrade,
+        Integer studentClass,
+        Integer studentNumber,
         String studentMajor,
         Role role
 ) {
@@ -14,7 +17,10 @@ public record UserResponse(
         return new UserResponse(
                 user.getId(),
                 user.getStudentName(),
-                user.getStudentId(),
+                user.getStudentEmail(),
+                user.getStudentGrade(),
+                user.getStudentClass(),
+                user.getStudentNumber(),
                 user.getStudentMajor(),
                 user.getRole()
         );

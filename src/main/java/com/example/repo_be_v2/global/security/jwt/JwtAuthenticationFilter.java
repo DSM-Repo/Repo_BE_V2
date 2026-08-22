@@ -43,8 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void authenticate(String token) {
         try {
-            String studentId = jwtTokenProvider.parseClaims(token).getSubject();
-            User user = userRepository.findByStudentId(studentId).orElse(null);
+            String studentEmail = jwtTokenProvider.parseClaims(token).getSubject();
+            User user = userRepository.findByStudentEmail(studentEmail).orElse(null);
             if (user == null) {
                 return;
             }

@@ -21,13 +21,13 @@ public class UserLoginService {
 
     @Transactional(readOnly = true)
     public TokenResponse execute(UserLoginRequest request) {
-        User user = userRepository.findByStudentId(request.studentId())
-                .orElseThrow(() -> new UserException(HttpStatus.UNAUTHORIZED, "학번 또는 비밀번호가 올바르지 않습니다."));
+        User user = userRepository.findByStudentEmail(request.studentEmail())
+                .orElseThrow(() -> new UserException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."));
 
         if (!passwordEncoder.matches(request.password(), user.getStudentPassword())) {
-            throw new UserException(HttpStatus.UNAUTHORIZED, "학번 또는 비밀번호가 올바르지 않습니다.");
+            throw new UserException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        return jwtTokenProvider.createToken(user.getStudentId(), user.getRole());
+        return jwtTokenProvider.createToken(user.getStudentEmail(), user.getRole());
     }
 }

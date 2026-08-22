@@ -3,8 +3,10 @@ package com.example.repo_be_v2.domain.user.domain.repository;
 import com.example.repo_be_v2.domain.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    boolean existsByStudentId(String studentId);
+import java.util.Optional;
 
-    java.util.Optional<User> findByStudentId(String studentId);
+public interface UserRepository extends JpaRepository<User, Long> {
+    boolean existsByStudentEmail(String studentEmail);
+
+    Optional<User> findByStudentEmail(String studentEmail);
 }

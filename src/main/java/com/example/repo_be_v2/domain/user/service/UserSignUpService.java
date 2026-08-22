@@ -19,13 +19,16 @@ public class UserSignUpService {
 
     @Transactional
     public UserResponse execute(UserSignUpRequest request) {
-        if (userRepository.existsByStudentId(request.studentId())) {
-            throw new UserException(HttpStatus.CONFLICT, "이미 사용 중인 학번입니다.");
+        if (userRepository.existsByStudentEmail(request.studentEmail())) {
+            throw new UserException(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다.");
         }
 
         User user = User.builder()
                 .studentName(request.studentName())
-                .studentId(request.studentId())
+                .studentEmail(request.studentEmail())
+                .studentGrade(request.studentGrade())
+                .studentClass(request.studentClass())
+                .studentNumber(request.studentNumber())
                 .studentPassword(passwordEncoder.encode(request.password()))
                 .studentMajor(request.studentMajor())
                 .role(request.role())
