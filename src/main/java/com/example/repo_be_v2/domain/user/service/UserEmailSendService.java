@@ -11,7 +11,6 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
 import java.security.SecureRandom;
 import java.time.Duration;
 
@@ -33,11 +32,11 @@ public class UserEmailSendService {
 
     public void execute(EmailVerificationSendRequest emailVerificationSendRequest) {
         String email = emailVerificationSendRequest.email();
-        if (userRepository.existsByStudentEmail(email)) {
+        if (userRepository.existsByStudentEmail(email)) { //이메일 중복 확인
             throw new EmailAlreadyExistsException();
         }
 
-        String cooldownKey = COOLDOWN_KEY_PREFIX + email;
+        String cooldownKey = COOLDOWN_KEY_PREFIX + email; //이메일 재전송 쿨타임
         Boolean requestAccepted = redisTemplate.opsForValue()
                 .setIfAbsent(cooldownKey, "true", RESEND_COOLDOWN);
 
@@ -45,12 +44,13 @@ public class UserEmailSendService {
             throw new EmailVerificationRequestLimitException();
         }
 
+        //새 인증코드 전송
         String codeKey = CODE_KEY_PREFIX + email;
         String code = generateCode();
         redisTemplate.delete(VERIFIED_KEY_PREFIX + email);
         redisTemplate.opsForValue().set(codeKey, code, CODE_EXPIRATION);
 
-        try{
+        try{ // 오류 생기면 저장한 인증코드 레디스 서버에서 삭제하는 코드
             mailSender.send(createMessage(email,code));
         }catch (MailException mailException){
             redisTemplate.delete(cooldownKey);
@@ -66,7 +66,7 @@ public class UserEmailSendService {
         return message;
     }
 
-    private String generateCode() {
+    private String generateCode() { //인증코드 생성 메서드
         return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
     }
 }
