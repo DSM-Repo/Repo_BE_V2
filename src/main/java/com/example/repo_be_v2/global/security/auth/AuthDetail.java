@@ -20,10 +20,6 @@ public record AuthDetail(User user) implements UserDetails {
 
     @Override
     public String getUsername() {
-<<<<<<< HEAD
         return user.getStudentEmail();
-=======
-        return user.getStudentId();
->>>>>>> origin/1-feat-user-login
     }
 }

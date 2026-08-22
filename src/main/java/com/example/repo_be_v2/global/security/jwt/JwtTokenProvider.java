@@ -33,19 +33,11 @@ public class JwtTokenProvider {
         key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-<<<<<<< HEAD
     public TokenResponse createToken(String studentEmail, Role role) {
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(accessTokenExpiration);
         String token = Jwts.builder()
                 .subject(studentEmail)
-=======
-    public TokenResponse createToken(String studentId, Role role) {
-        Instant now = Instant.now();
-        Instant expiration = now.plusMillis(accessTokenExpiration);
-        String token = Jwts.builder()
-                .subject(studentId)
->>>>>>> origin/1-feat-user-login
                 .claim("role", role.name())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
