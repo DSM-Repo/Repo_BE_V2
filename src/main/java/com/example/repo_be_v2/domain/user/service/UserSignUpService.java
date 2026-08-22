@@ -2,11 +2,10 @@ package com.example.repo_be_v2.domain.user.service;
 
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
+import com.example.repo_be_v2.domain.user.exception.EmailAlreadyExistsException;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.UserResponse;
-import com.example.repo_be_v2.global.exception.UserException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +19,7 @@ public class UserSignUpService {
     @Transactional
     public UserResponse execute(UserSignUpRequest request) {
         if (userRepository.existsByStudentEmail(request.studentEmail())) {
-            throw new UserException(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다.");
+            throw new EmailAlreadyExistsException();
         }
 
         User user = User.builder()

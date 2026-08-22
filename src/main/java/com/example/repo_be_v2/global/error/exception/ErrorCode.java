@@ -16,6 +16,9 @@ public enum ErrorCode {
 
     // user
     USER_NOT_FOUND(404, "사용자를 찾을 수 없습니다."),
+    INVALID_CREDENTIALS(401, "이메일 또는 비밀번호가 올바르지 않습니다."),
+    EMAIL_ALREADY_EXISTS(409, "이미 사용 중인 이메일입니다."),
+    EMAIL_VERIFICATION_REQUEST_LIMIT(429, "인증 메일은 5분 후에 다시 요청할 수 있습니다."),
 
     // resume
     RESUME_NOT_FOUND(404, "이력서를 찾을 수 없습니다."),

@@ -2,12 +2,11 @@ package com.example.repo_be_v2.domain.user.service;
 
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
+import com.example.repo_be_v2.domain.user.exception.InvalidCredentialsException;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserLoginRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.TokenResponse;
-import com.example.repo_be_v2.global.exception.UserException;
 import com.example.repo_be_v2.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +21,10 @@ public class UserLoginService {
     @Transactional(readOnly = true)
     public TokenResponse execute(UserLoginRequest request) {
         User user = userRepository.findByStudentEmail(request.studentEmail())
-                .orElseThrow(() -> new UserException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordEncoder.matches(request.password(), user.getStudentPassword())) {
-            throw new UserException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다.");
+            throw new InvalidCredentialsException();
         }
 
         return jwtTokenProvider.createToken(user.getStudentEmail(), user.getRole());

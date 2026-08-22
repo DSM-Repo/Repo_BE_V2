@@ -13,11 +13,6 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(UserException.class)
-    public ResponseEntity<ErrorResponse> handleUserException(UserException exception) {
-        return response(exception.getStatus(), exception.getMessage(), Map.of());
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new LinkedHashMap<>();
