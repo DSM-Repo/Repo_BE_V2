@@ -14,7 +14,7 @@ UserSignUpRequest(
 
         @NotBlank(message = "이메일을 공백으로 둘 수 없습니다.")
         @Email(message = "올바른 이메일 형식이어야 합니다.")
-        String studentEmail,
+        String email,
 
         @NotNull(message = "학년을 입력해야 합니다.")
         Integer studentGrade,
