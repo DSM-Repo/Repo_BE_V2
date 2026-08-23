@@ -4,17 +4,17 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-public record UserLoginRequest(
-
-        @NotBlank(message = "이메일을 공백으로 둘 수 없습니다.")
-        @Email(message = "올바른 이메일 형식이어야 합니다.")
+public record EmailVerificationConfirmRequest(
+        @NotBlank(message = "이메일은 필수입니다.")
         @Pattern(
                 regexp = "^[A-Za-z0-9._%+-]+@dsm\\.hs\\.kr$",
                 message = "dsm.hs.kr 이메일만 사용할 수 있습니다."
         )
+        @Email(message = "올바른 이메일 형식이어야 합니다.")
         String email,
 
-        @NotBlank(message = "비밀번호는 공백으로 둘 순 없습니다.")
-        String password
+        @NotBlank(message = "인증 코드는 필수입니다.")
+        @Pattern(regexp = "\\d{6}", message = "인증 코드는 숫자 6자리여야 합니다.")
+        String code
 ) {
 }
