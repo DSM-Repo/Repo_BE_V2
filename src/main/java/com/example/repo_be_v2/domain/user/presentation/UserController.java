@@ -1,11 +1,15 @@
 package com.example.repo_be_v2.domain.user.presentation;
 
-import com.example.repo_be_v2.domain.user.service.UserLoginService;
-import com.example.repo_be_v2.domain.user.service.UserSignUpService;
+import com.example.repo_be_v2.domain.user.presentation.dto.request.EmailVerificationConfirmRequest;
+import com.example.repo_be_v2.domain.user.presentation.dto.request.EmailVerificationSendRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserLoginRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.TokenResponse;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.UserResponse;
+import com.example.repo_be_v2.domain.user.service.UserEmailSendService;
+import com.example.repo_be_v2.domain.user.service.UserEmailVerifyService;
+import com.example.repo_be_v2.domain.user.service.UserLoginService;
+import com.example.repo_be_v2.domain.user.service.UserSignUpService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserLoginService userLoginService;
     private final UserSignUpService userSignUpService;
+    private final UserEmailSendService userEmailSendService;
+    private final UserEmailVerifyService userEmailVerifyService;
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
@@ -31,5 +37,17 @@ public class UserController {
     @PostMapping("/login")
     public TokenResponse login(@Valid @RequestBody UserLoginRequest request) {
         return userLoginService.execute(request);
+    }
+
+    @PostMapping("/email/send")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void sendEmailVerificationCode(@Valid @RequestBody EmailVerificationSendRequest request) {
+        userEmailSendService.execute(request);
+    }
+
+    @PostMapping("/email/verify")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void verifyEmail(@Valid @RequestBody EmailVerificationConfirmRequest request) {
+        userEmailVerifyService.execute(request);
     }
 }
