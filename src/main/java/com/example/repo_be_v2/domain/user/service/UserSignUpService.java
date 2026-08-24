@@ -19,7 +19,7 @@ public class UserSignUpService {
 
     @Transactional
     public UserResponse execute(UserSignUpRequest request) {
-        String email = request.studentEmail();
+        String email = request.email();
         if (userRepository.existsByStudentEmail(email)) {
             throw new EmailAlreadyExistsException();
         }
@@ -27,7 +27,7 @@ public class UserSignUpService {
 
         User user = User.builder()
                 .studentName(request.studentName())
-                .studentEmail(request.studentEmail())
+                .studentEmail(request.email())
                 .studentGrade(request.studentGrade())
                 .studentClass(request.studentClass())
                 .studentNumber(request.studentNumber())

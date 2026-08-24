@@ -20,7 +20,7 @@ public class UserLoginService {
 
     @Transactional(readOnly = true)
     public TokenResponse execute(UserLoginRequest request) {
-        User user = userRepository.findByStudentEmail(request.studentEmail())
+        User user = userRepository.findByStudentEmail(request.email())
                 .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordEncoder.matches(request.password(), user.getStudentPassword())) {
