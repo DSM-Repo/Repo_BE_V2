@@ -7,6 +7,7 @@ import com.example.repo_be_v2.domain.feedback.presentation.dto.request.FeedbackC
 import com.example.repo_be_v2.domain.feedback.presentation.dto.response.FeedbackCreateResponse;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,12 +47,24 @@ public class FeedbackCreateService {
                 LocalDateTime.now()
         );
 
-        Feedback savedFeedback = feedbackRepository.save(feedback);
+        Feedback savedFeedback = save(feedback);
 
         return new FeedbackCreateResponse(
                 savedFeedback.getId(),
                 savedFeedback.getPageIndex(),
                 savedFeedback.getCreatedAt()
         );
+    }
+
+    /**
+     * 위의 exists 검사와 저장 사이에 다른 요청이 같은 자리를 차지할 수 있어
+     * (resumeId, elementId) unique 인덱스 위반을 같은 도메인 예외로 바꿔준다.
+     */
+    private Feedback save(Feedback feedback) {
+        try {
+            return feedbackRepository.save(feedback);
+        } catch (DuplicateKeyException e) {
+            throw new FeedbackAlreadyExistsException();
+        }
     }
 }

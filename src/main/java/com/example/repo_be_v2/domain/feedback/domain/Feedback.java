@@ -7,12 +7,23 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
+/**
+ * 같은 이력서의 같은 객체에는 피드백이 하나만 존재해야 한다.
+ * 서비스의 exists 검사는 검사와 저장 사이의 경합을 막지 못하므로
+ * unique 인덱스로 최종 무결성을 보장한다.
+ * resumeId가 접두사라 resumeId 단독 조회도 이 인덱스가 처리한다.
+ */
 @Document(collection = "feedbacks")
+@CompoundIndex(
+        name = "uk_feedback_resume_element",
+        def = "{'resumeId': 1, 'elementId': 1}",
+        unique = true
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Feedback {
@@ -21,7 +32,6 @@ public class Feedback {
     private String id;
 
     //피드백이 달린 이력서(문서)의 MongoDB id
-    @Indexed
     private String resumeId;
 
     //이력서 페이지 content 안에서 피드백이 달린 객체의 id
