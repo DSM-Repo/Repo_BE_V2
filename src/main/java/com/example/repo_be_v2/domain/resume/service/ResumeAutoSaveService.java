@@ -1,6 +1,5 @@
 package com.example.repo_be_v2.domain.resume.service;
 
-import com.example.repo_be_v2.domain.feedback.service.FeedbackSyncService;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
@@ -19,7 +18,6 @@ public class ResumeAutoSaveService {
 
     private final ResumeRepository resumeRepository;
     private final ResumeReader resumeReader;
-    private final FeedbackSyncService feedbackSyncService;
 
     //이력서 자동 저장, 자동 저장에서는 pages만 변경한다.
     @Transactional
@@ -33,8 +31,6 @@ public class ResumeAutoSaveService {
         resume.autoSave(pages, savedAt);
 
         Resume savedResume = resumeRepository.save(resume);
-
-        feedbackSyncService.execute(savedResume);
 
         return new ResumeAutoSaveResponse(
                 savedResume.getId(),

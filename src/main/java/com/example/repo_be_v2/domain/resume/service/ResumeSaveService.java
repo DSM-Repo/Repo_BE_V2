@@ -1,6 +1,5 @@
 package com.example.repo_be_v2.domain.resume.service;
 
-import com.example.repo_be_v2.domain.feedback.service.FeedbackSyncService;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
@@ -19,7 +18,6 @@ public class ResumeSaveService {
 
     private final ResumeRepository resumeRepository;
     private final ResumeReader resumeReader;
-    private final FeedbackSyncService feedbackSyncService;
 
     /**
      * 이력서 수동 저장
@@ -36,9 +34,6 @@ public class ResumeSaveService {
 
         Resume resume = findOrCreateResume(userId, request, pages, savedAt);
         Resume savedResume = resumeRepository.save(resume);
-
-        //이력서에서 사라지거나 옮겨진 객체의 피드백을 정리한다.
-        feedbackSyncService.execute(savedResume);
 
         return new ResumeSaveResponse(
                 savedResume.getId(),

@@ -31,6 +31,7 @@ public enum ErrorCode {
     RESUME_PAGE_CONTENT_REQUIRED(400, "작성되지 않은 이력서 페이지가 있습니다."),
     RESUME_NOT_EDITABLE(400, "제출된 이력서는 수정할 수 없습니다."),
     RESUME_NOT_SUBMITTED(400, "제출된 이력서가 아닙니다."),
+    RESUME_DELETED(410, "삭제된 이력서입니다."),
     ;
 
     private final int statusCode;
