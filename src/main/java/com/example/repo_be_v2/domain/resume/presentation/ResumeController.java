@@ -4,7 +4,7 @@ import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeAutoS
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeSaveRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeVisibilityRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.*;
-import com.example.repo_be_v2.domain.resume.service.ResumeService;
+import com.example.repo_be_v2.domain.resume.service.*;
 import com.example.repo_be_v2.global.security.auth.AuthDetail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ResumeController {
 
-    private final ResumeService resumeService;
+    private final ResumeGetService resumeGetService;
+    private final ResumeSaveService resumeSaveService;
+    private final ResumeAutoSaveService resumeAutoSaveService;
+    private final ResumeSubmitService resumeSubmitService;
+    private final ResumeCancelSubmitService resumeCancelSubmitService;
+    private final ResumeVisibilityService resumeVisibilityService;
 
     //내 이력서 조회
     @GetMapping("/{resumeId}")
@@ -24,7 +29,7 @@ public class ResumeController {
             @AuthenticationPrincipal AuthDetail auth,
             @PathVariable String resumeId
     ) {
-        return resumeService.getResume(auth.getId(), resumeId);
+        return resumeGetService.execute(auth.getId(), resumeId);
     }
 
     // 이력서 저장
@@ -33,7 +38,7 @@ public class ResumeController {
             @AuthenticationPrincipal AuthDetail auth,
             @Valid @RequestBody ResumeSaveRequest request
     ) {
-        return resumeService.saveResume(auth.getId(), request);
+        return resumeSaveService.execute(auth.getId(), request);
     }
 
     // 이력서 자동저장
@@ -42,7 +47,7 @@ public class ResumeController {
             @AuthenticationPrincipal AuthDetail auth,
             @Valid @RequestBody ResumeAutoSaveRequest request
     ) {
-        return resumeService.autoSaveResume(auth.getId(), request);
+        return resumeAutoSaveService.execute(auth.getId(), request);
     }
 
     // 이력서 제출
@@ -50,7 +55,7 @@ public class ResumeController {
     public ResumeSubmitResponse submitResume(
             @AuthenticationPrincipal AuthDetail auth
     ) {
-        return resumeService.submitResume(auth.getId());
+        return resumeSubmitService.execute(auth.getId());
     }
 
     // 이력서 제출 취소
@@ -58,7 +63,7 @@ public class ResumeController {
     public ResumeSubmitResponse cancelSubmit(
             @AuthenticationPrincipal AuthDetail auth
     ) {
-        return resumeService.cancelSubmit(auth.getId());
+        return resumeCancelSubmitService.execute(auth.getId());
     }
 
     // 이력서 공개 여부 변경
@@ -67,6 +72,6 @@ public class ResumeController {
             @AuthenticationPrincipal AuthDetail auth,
             @Valid @RequestBody ResumeVisibilityRequest request
     ) {
-        return resumeService.changeVisibility(auth.getId(), request);
+        return resumeVisibilityService.execute(auth.getId(), request);
     }
 }

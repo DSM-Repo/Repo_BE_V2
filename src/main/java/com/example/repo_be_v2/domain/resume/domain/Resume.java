@@ -1,8 +1,8 @@
 package com.example.repo_be_v2.domain.resume.domain;
 
 import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
-import com.example.repo_be_v2.global.error.exception.ErrorCode;
-import com.example.repo_be_v2.global.error.exception.REPOException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeNotEditableException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeNotSubmittedException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -99,7 +99,7 @@ public class Resume {
 
     public void cancelSubmit() {
         if (submissionStatus != ResumeSubmissionStatus.SUBMITTED) {
-            throw new REPOException(ErrorCode.RESUME_NOT_SUBMITTED);
+            throw new ResumeNotSubmittedException();
         }
 
         this.submissionStatus = ResumeSubmissionStatus.ONGOING;
@@ -109,7 +109,7 @@ public class Resume {
     public void release(LocalDateTime releasedAt) {
         if (submissionStatus != ResumeSubmissionStatus.SUBMITTED
                 && submissionStatus != ResumeSubmissionStatus.RELEASED) {
-            throw new REPOException(ErrorCode.RESUME_NOT_SUBMITTED);
+            throw new ResumeNotSubmittedException();
         }
 
         this.submissionStatus = ResumeSubmissionStatus.RELEASED;
@@ -134,7 +134,7 @@ public class Resume {
 
     private void assertEditable() {
         if (submissionStatus != ResumeSubmissionStatus.ONGOING) {
-            throw new REPOException(ErrorCode.RESUME_NOT_EDITABLE);
+            throw new ResumeNotEditableException();
         }
     }
 }
