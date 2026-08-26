@@ -86,6 +86,15 @@ public class Feedback {
         this.updatedAt = updatedAt;
     }
 
+    //이 피드백이 해당 이력서에 달린 것인지 판정한다.
+    public boolean isOwnedBy(String resumeId) {
+        return this.resumeId.equals(resumeId);
+    }
+
+    public boolean isCompleted() {
+        return status == FeedbackStatus.COMPLETED;
+    }
+
     public void complete(LocalDateTime completedAt) {
         if (status == FeedbackStatus.COMPLETED) {
             throw new FeedbackAlreadyCompletedException();

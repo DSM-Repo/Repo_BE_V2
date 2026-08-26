@@ -43,7 +43,7 @@ public class FeedbackListService {
         Map<Long, User> teachers = findTeachers(feedbacks);
 
         List<FeedbackListItemResponse> responses = feedbacks.stream()
-                .map(feedback -> toItemResponse(feedback, teachers.get(feedback.getTeacherId())))
+                .map(feedback -> FeedbackListItemResponse.from(feedback, teachers.get(feedback.getTeacherId())))
                 .toList();
 
         return new FeedbackListResponse(responses, responses.size());
@@ -70,19 +70,5 @@ public class FeedbackListService {
         return userRepository.findAllById(teacherIds)
                 .stream()
                 .collect(Collectors.toMap(User::getId, Function.identity()));
-    }
-
-    //탈퇴 등으로 선생님 정보가 없으면 이름 없이 내려준다.
-    private FeedbackListItemResponse toItemResponse(Feedback feedback, User teacher) {
-        return new FeedbackListItemResponse(
-                feedback.getId(),
-                feedback.getElementId(),
-                feedback.getPageIndex(),
-                feedback.getContent(),
-                feedback.getStatus(),
-                teacher == null ? null : teacher.getStudentName(),
-                feedback.getCreatedAt(),
-                feedback.getCompletedAt()
-        );
     }
 }

@@ -29,11 +29,7 @@ public class FeedbackCompleteService {
         feedbackReader.validateOwner(studentId, feedback);
 
         feedback.complete(LocalDateTime.now());
-        Feedback savedFeedback = feedbackRepository.save(feedback);
 
-        return new FeedbackStatusResponse(
-                savedFeedback.getId(),
-                savedFeedback.getStatus()
-        );
+        return FeedbackStatusResponse.from(feedbackRepository.save(feedback));
     }
 }

@@ -9,7 +9,6 @@ import com.example.repo_be_v2.domain.feedback.presentation.dto.response.Feedback
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
-import com.example.repo_be_v2.global.error.exception.REPOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,26 +71,35 @@ public class FeedbackApplyService {
         return new FeedbackApplyResponse(succeeded.size(), failed);
     }
 
-    //한 건을 처리하고, 실패하면 사유를 돌려준다. 성공이면 null.
+    /**
+     * 한 건을 처리하고, 실패하면 사유를 돌려준다. 성공이면 null.
+     *
+     * 상태 판정은 도메인(Feedback)에 맡기고 여기서는 실패 사유만 정한다.
+     * 사유 문자열은 응답 형식이라 도메인이 아닌 이 계층에 남긴다.
+     */
     private String apply(Feedback feedback, Resume resume, boolean applied, LocalDateTime now) {
         if (feedback == null) {
             return "NOT_FOUND";
         }
 
-        if (!feedback.getResumeId().equals(resume.getId())) {
+        if (!feedback.isOwnedBy(resume.getId())) {
             return "ACCESS_DENIED";
         }
 
-        try {
-            if (applied) {
-                feedback.complete(now);
-            } else {
-                feedback.pending();
+        if (applied) {
+            if (feedback.isCompleted()) {
+                return "ALREADY_APPLIED";
             }
-        } catch (REPOException e) {
-            return applied ? "ALREADY_APPLIED" : "NOT_APPLIED";
+
+            feedback.complete(now);
+            return null;
         }
 
+        if (!feedback.isCompleted()) {
+            return "NOT_APPLIED";
+        }
+
+        feedback.pending();
         return null;
     }
 }

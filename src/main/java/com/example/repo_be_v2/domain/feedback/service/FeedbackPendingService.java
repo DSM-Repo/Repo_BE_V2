@@ -27,11 +27,7 @@ public class FeedbackPendingService {
         feedbackReader.validateOwner(studentId, feedback);
 
         feedback.pending();
-        Feedback savedFeedback = feedbackRepository.save(feedback);
 
-        return new FeedbackStatusResponse(
-                savedFeedback.getId(),
-                savedFeedback.getStatus()
-        );
+        return FeedbackStatusResponse.from(feedbackRepository.save(feedback));
     }
 }

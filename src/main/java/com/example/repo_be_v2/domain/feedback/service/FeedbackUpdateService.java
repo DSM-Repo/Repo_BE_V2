@@ -8,7 +8,6 @@ import com.example.repo_be_v2.domain.feedback.presentation.dto.response.Feedback
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +19,7 @@ public class FeedbackUpdateService {
 
     private final FeedbackRepository feedbackRepository;
     private final FeedbackReader feedbackReader;
+    private final FeedbackSaver feedbackSaver;
 
     /**
      * 피드백 수정 (선생님 권한)
@@ -29,6 +29,9 @@ public class FeedbackUpdateService {
      * 수정으로 다른 이력서를 가리키게 되는 일은 없다.
      * element_id가 바뀌면 위치를 다시 계산하고, 옮긴 위치에
      * 이미 다른 피드백이 있으면 409를 돌려준다.
+     *
+     * pageIndex와 updatedAt은 서버가 정하는 값이라 클라이언트가 알 수 없어
+     * 수정 결과를 함께 내려준다. 프론트가 재조회하지 않아도 되게 하기 위함이다.
      */
     @Transactional
     public FeedbackUpdateResponse execute(
@@ -56,26 +59,6 @@ public class FeedbackUpdateService {
                 LocalDateTime.now()
         );
 
-        Feedback savedFeedback = save(feedback);
-
-        return new FeedbackUpdateResponse(
-                savedFeedback.getId(),
-                savedFeedback.getContent(),
-                savedFeedback.getPageIndex(),
-                teacher.getStudentName(),
-                savedFeedback.getUpdatedAt()
-        );
-    }
-
-    /**
-     * 위의 exists 검사와 저장 사이에 다른 요청이 같은 자리를 차지할 수 있어
-     * (resumeId, elementId) unique 인덱스 위반을 같은 도메인 예외로 바꿔준다.
-     */
-    private Feedback save(Feedback feedback) {
-        try {
-            return feedbackRepository.save(feedback);
-        } catch (DuplicateKeyException e) {
-            throw new FeedbackAlreadyExistsException();
-        }
+        return FeedbackUpdateResponse.from(feedbackSaver.save(feedback), teacher);
     }
 }

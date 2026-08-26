@@ -28,11 +28,6 @@ public class FeedbackGetService {
         Resume resume = feedbackReader.getResume(feedback.getResumeId());
         feedbackReader.validateReadable(requester, resume);
 
-        return new FeedbackResponse(
-                feedback.getId(),
-                feedback.getContent(),
-                feedback.getStatus(),
-                feedback.getCreatedAt()
-        );
+        return FeedbackResponse.from(feedback);
     }
 }
