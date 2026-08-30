@@ -30,9 +30,6 @@ UserSignUpRequest(
         @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
         String password,
 
-        @NotBlank(message = "전공을 공백으로 둘 수 없습니다.")
-        String studentMajor,
-
         @NotNull(message = "권한을 선택해야 합니다.")
         Role role
 ) {

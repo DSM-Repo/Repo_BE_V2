@@ -5,7 +5,6 @@ import com.example.repo_be_v2.domain.user.presentation.dto.request.EmailVerifica
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserLoginRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.TokenResponse;
-import com.example.repo_be_v2.domain.user.presentation.dto.response.UserResponse;
 import com.example.repo_be_v2.domain.user.service.UserEmailSendService;
 import com.example.repo_be_v2.domain.user.service.UserEmailVerifyService;
 import com.example.repo_be_v2.domain.user.service.UserLoginService;

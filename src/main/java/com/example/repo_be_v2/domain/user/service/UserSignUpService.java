@@ -4,7 +4,6 @@ import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
 import com.example.repo_be_v2.domain.user.exception.EmailAlreadyExistsException;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
-import com.example.repo_be_v2.domain.user.presentation.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,7 @@ public class UserSignUpService {
     private final UserEmailVerifyService userEmailVerifyService;
 
     @Transactional
-    public UserResponse execute(UserSignUpRequest request) {
+    public void execute(UserSignUpRequest request) {
         String email = request.email();
         if (userRepository.existsByStudentEmail(email)) {
             throw new EmailAlreadyExistsException();
@@ -32,12 +31,10 @@ public class UserSignUpService {
                 .studentClass(request.studentClass())
                 .studentNumber(request.studentNumber())
                 .studentPassword(passwordEncoder.encode(request.password()))
-                .studentMajor(request.studentMajor())
                 .role(request.role())
                 .build();
 
-        User savedUser = userRepository.save(user);
+        userRepository.save(user);
         userEmailVerifyService.clearVerification(email);
-        return UserResponse.from(savedUser);
     }
 }
