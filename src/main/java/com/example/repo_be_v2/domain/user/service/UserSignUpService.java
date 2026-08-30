@@ -31,7 +31,6 @@ public class UserSignUpService {
                 .studentClass(request.studentClass())
                 .studentNumber(request.studentNumber())
                 .studentPassword(passwordEncoder.encode(request.password()))
-                .studentMajor(request.studentMajor())
                 .role(request.role())
                 .build();
 
