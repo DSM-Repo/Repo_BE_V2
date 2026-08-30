@@ -35,8 +35,8 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "회원가입", description = "이메일 인증을 완료한 사용자를 등록합니다.")
     @ApiResponse(responseCode = "201", description = "회원가입 성공", useReturnTypeSchema = true)
-    public UserResponse signUp(@Valid @RequestBody UserSignUpRequest request) {
-        return userSignUpService.execute(request);
+    public void signUp(@Valid @RequestBody UserSignUpRequest request) {
+        userSignUpService.execute(request);
     }
 
     @PostMapping("/login")
