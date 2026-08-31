@@ -1,8 +1,6 @@
 package com.example.repo_be_v2.domain.feedback.service;
 
 import com.example.repo_be_v2.domain.feedback.domain.Feedback;
-import com.example.repo_be_v2.domain.feedback.domain.repository.FeedbackRepository;
-import com.example.repo_be_v2.domain.feedback.exception.FeedbackAlreadyExistsException;
 import com.example.repo_be_v2.domain.feedback.presentation.dto.request.FeedbackUpdateRequest;
 import com.example.repo_be_v2.domain.feedback.presentation.dto.response.FeedbackUpdateResponse;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
@@ -17,7 +15,6 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class FeedbackUpdateService {
 
-    private final FeedbackRepository feedbackRepository;
     private final FeedbackReader feedbackReader;
     private final FeedbackSaver feedbackSaver;
 
@@ -27,10 +24,9 @@ public class FeedbackUpdateService {
      * 본인이 작성한 피드백만 수정할 수 있다.
      * 대상 문서는 요청이 아니라 피드백이 들고 있는 resumeId로 정하므로
      * 수정으로 다른 이력서를 가리키게 되는 일은 없다.
-     * element_id가 바뀌면 위치를 다시 계산하고, 옮긴 위치에
-     * 이미 다른 피드백이 있으면 409를 돌려준다.
+     * 페이지를 옮기는 것도 허용하되, 옮길 페이지가 같은 이력서 안에 있어야 한다.
      *
-     * pageIndex와 updatedAt은 서버가 정하는 값이라 클라이언트가 알 수 없어
+     * updatedAt은 서버가 정하는 값이라 클라이언트가 알 수 없어
      * 수정 결과를 함께 내려준다. 프론트가 재조회하지 않아도 되게 하기 위함이다.
      */
     @Transactional
@@ -45,16 +41,12 @@ public class FeedbackUpdateService {
         feedbackReader.validateWriter(teacherId, feedback);
 
         Resume resume = feedbackReader.getResume(feedback.getResumeId());
-        int pageIndex = feedbackReader.resolvePageIndex(resume, request.elementId());
-
-        if (!request.elementId().equals(feedback.getElementId())
-                && feedbackRepository.existsByResumeIdAndElementId(feedback.getResumeId(), request.elementId())) {
-            throw new FeedbackAlreadyExistsException();
-        }
+        feedbackReader.validatePage(resume, request.pageId());
 
         feedback.update(
-                request.elementId(),
-                pageIndex,
+                request.pageId(),
+                request.x(),
+                request.y(),
                 request.comment(),
                 LocalDateTime.now()
         );

@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 
 public record FeedbackListItemResponse(
         String feedbackId,
-        String elementId,
-        int pageIndex,
+        String pageId,
+        double x,
+        double y,
         String content,
         FeedbackStatus status,
         String teacherName,
@@ -21,8 +22,9 @@ public record FeedbackListItemResponse(
     public static FeedbackListItemResponse from(Feedback feedback, User teacher) {
         return new FeedbackListItemResponse(
                 feedback.getId(),
-                feedback.getElementId(),
-                feedback.getPageIndex(),
+                feedback.getPageId(),
+                feedback.getX(),
+                feedback.getY(),
                 feedback.getContent(),
                 feedback.getStatus(),
                 teacher == null ? null : teacher.getStudentName(),

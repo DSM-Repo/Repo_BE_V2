@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 
 public record FeedbackResponse(
         String feedbackId,
+        String pageId,
+        double x,
+        double y,
         String content,
         FeedbackStatus status,
         LocalDateTime createdAt
@@ -15,6 +18,9 @@ public record FeedbackResponse(
     public static FeedbackResponse from(Feedback feedback) {
         return new FeedbackResponse(
                 feedback.getId(),
+                feedback.getPageId(),
+                feedback.getX(),
+                feedback.getY(),
                 feedback.getContent(),
                 feedback.getStatus(),
                 feedback.getCreatedAt()

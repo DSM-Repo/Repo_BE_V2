@@ -25,7 +25,7 @@ public class ResumeAutoSaveService {
         resumeReader.getUser(userId);
 
         Resume resume = resumeReader.getResumeByUserId(userId);
-        List<ResumePage> pages = resumeReader.toResumePages(request.pages());
+        List<ResumePage> pages = resumeReader.toResumePages(resume, request.pages());
         LocalDateTime savedAt = LocalDateTime.now();
 
         resume.autoSave(pages, savedAt);

@@ -42,10 +42,11 @@ public class FeedbackController {
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
             @Parameter(description = "이력서 문서 ID", example = "66c73ec4c92f1d2d087e9012")
             @RequestParam String documentId,
-            @Parameter(description = "페이지 인덱스. 생략하면 문서 전체 피드백을 조회합니다.", example = "0")
-            @RequestParam(required = false) Integer pageIndex
+            @Parameter(description = "페이지 ID. 생략하면 문서 전체 피드백을 조회합니다.",
+                    example = "cdd552b6-692c-4d42-b791-e8b6916e2e1b")
+            @RequestParam(required = false) String pageId
     ) {
-        return feedbackListService.execute(auth.getId(), documentId, pageIndex);
+        return feedbackListService.execute(auth.getId(), documentId, pageId);
     }
 
     // 피드백 단건 조회
@@ -63,7 +64,7 @@ public class FeedbackController {
     // 피드백 추가 (선생님 권한)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "피드백 추가", description = "선생님이 이력서의 특정 요소에 피드백을 작성합니다.")
+    @Operation(summary = "피드백 추가", description = "선생님이 이력서 페이지 위의 좌표(x, y)에 피드백을 작성합니다.")
     @ApiResponse(responseCode = "201", description = "피드백 생성 성공", useReturnTypeSchema = true)
     public FeedbackCreateResponse createFeedback(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
@@ -74,7 +75,7 @@ public class FeedbackController {
 
     // 피드백 수정 (선생님 권한, 본인이 작성한 피드백만)
     @PatchMapping("/{feedbackId}")
-    @Operation(summary = "피드백 수정", description = "선생님이 본인이 작성한 피드백을 수정합니다.")
+    @Operation(summary = "피드백 수정", description = "선생님이 본인이 작성한 피드백의 내용과 위치를 수정합니다.")
     @ApiResponse(responseCode = "200", description = "피드백 수정 성공", useReturnTypeSchema = true)
     public FeedbackUpdateResponse updateFeedback(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,

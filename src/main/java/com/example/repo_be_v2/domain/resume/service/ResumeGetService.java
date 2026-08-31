@@ -40,6 +40,7 @@ public class ResumeGetService {
     private List<ResumePageResponse> toResumePageResponses(List<ResumePage> pages) {
         return pages.stream()
                 .map(page -> new ResumePageResponse(
+                        page.getId(),
                         page.getIndex(),
                         page.getContent()
                 ))
