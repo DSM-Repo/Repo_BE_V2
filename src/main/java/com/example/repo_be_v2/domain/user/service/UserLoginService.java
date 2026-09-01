@@ -17,6 +17,7 @@ public class UserLoginService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRefreshTokenService refreshTokenService;
 
     @Transactional(readOnly = true)
     public TokenResponse execute(UserLoginRequest request) {
@@ -26,7 +27,18 @@ public class UserLoginService {
         if (!passwordEncoder.matches(request.password(), user.getStudentPassword())) {
             throw new InvalidCredentialsException();
         }
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user);
 
-        return jwtTokenProvider.createToken(user.getStudentEmail(), user.getRole());
+        refreshTokenService.save(
+                user.getId(),
+                refreshToken
+        );
+
+        return new TokenResponse(
+                "Bearer",
+                accessToken,
+                refreshToken
+        );
     }
 }

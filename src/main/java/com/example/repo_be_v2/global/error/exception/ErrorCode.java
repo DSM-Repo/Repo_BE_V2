@@ -23,6 +23,7 @@ public enum ErrorCode {
     EMAIL_VERIFICATION_CODE_MISMATCH(400, "인증 코드가 올바르지 않습니다."),
     EMAIL_NOT_VERIFIED(403, "이메일 인증이 필요합니다."),
     EMAIL_SEND_FAILED(500, "인증 메일 전송에 실패했습니다."),
+    INVALID_REFRESH_TOKEN(401, "리프레시 토큰이 올바르지 않습니다."),
     TEACHER_PERMISSION_REQUIRED(403, "선생님 권한이 필요합니다."),
 
     // resume
