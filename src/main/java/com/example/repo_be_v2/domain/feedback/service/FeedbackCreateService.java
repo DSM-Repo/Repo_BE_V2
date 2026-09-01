@@ -31,15 +31,15 @@ public class FeedbackCreateService {
         Resume resume = feedbackReader.getResume(request.documentId());
         feedbackReader.validatePage(resume, request.pageId());
 
-        Feedback feedback = Feedback.create(
-                resume.getId(),
-                request.pageId(),
-                request.x(),
-                request.y(),
-                teacherId,
-                request.comment(),
-                LocalDateTime.now()
-        );
+        Feedback feedback = Feedback.builder()
+                .resumeId(resume.getId())
+                .pageId(request.pageId())
+                .x(request.x())
+                .y(request.y())
+                .teacherId(teacherId)
+                .content(request.comment())
+                .createdAt(LocalDateTime.now())
+                .build();
 
         return FeedbackCreateResponse.from(feedbackSaver.save(feedback));
     }

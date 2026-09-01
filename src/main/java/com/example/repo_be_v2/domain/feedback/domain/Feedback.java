@@ -4,6 +4,7 @@ import com.example.repo_be_v2.domain.feedback.domain.enums.FeedbackStatus;
 import com.example.repo_be_v2.domain.feedback.exception.FeedbackAlreadyCompletedException;
 import com.example.repo_be_v2.domain.feedback.exception.FeedbackNotCompletedException;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -54,7 +55,13 @@ public class Feedback {
 
     private LocalDateTime completedAt;
 
-    public static Feedback create(
+    /**
+     * 생성 시점에 채워야 하는 값만 받는 빌더용 생성자.
+     * id, status, updatedAt, completedAt은 빌더로 지정할 수 없고
+     * status는 항상 PENDING으로 시작한다.
+     */
+    @Builder
+    private Feedback(
             String resumeId,
             String pageId,
             double x,
@@ -63,18 +70,14 @@ public class Feedback {
             String content,
             LocalDateTime createdAt
     ) {
-        Feedback feedback = new Feedback();
-
-        feedback.resumeId = resumeId;
-        feedback.pageId = pageId;
-        feedback.x = x;
-        feedback.y = y;
-        feedback.teacherId = teacherId;
-        feedback.content = content;
-        feedback.status = FeedbackStatus.PENDING;
-        feedback.createdAt = createdAt;
-
-        return feedback;
+        this.resumeId = resumeId;
+        this.pageId = pageId;
+        this.x = x;
+        this.y = y;
+        this.teacherId = teacherId;
+        this.content = content;
+        this.status = FeedbackStatus.PENDING;
+        this.createdAt = createdAt;
     }
 
     public void update(
