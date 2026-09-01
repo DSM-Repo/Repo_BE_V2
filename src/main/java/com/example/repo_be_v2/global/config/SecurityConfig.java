@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/user/signup",
                                 "/user/login",
+                                "/user/refresh",
                                 "/user/email/send",
                                 "/user/email/verify",
                                 "/v3/api-docs/**",

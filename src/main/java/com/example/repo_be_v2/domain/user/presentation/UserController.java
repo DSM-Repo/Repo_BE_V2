@@ -4,11 +4,13 @@ import com.example.repo_be_v2.domain.user.presentation.dto.request.EmailVerifica
 import com.example.repo_be_v2.domain.user.presentation.dto.request.EmailVerificationSendRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserLoginRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
+import com.example.repo_be_v2.domain.user.presentation.dto.response.AccessTokenResponse;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.TokenResponse;
 import com.example.repo_be_v2.domain.user.service.UserEmailSendService;
 import com.example.repo_be_v2.domain.user.service.UserEmailVerifyService;
 import com.example.repo_be_v2.domain.user.service.UserLoginService;
 import com.example.repo_be_v2.domain.user.service.UserSignUpService;
+import com.example.repo_be_v2.domain.user.service.UserTokenRefreshService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +33,7 @@ public class UserController {
     private final UserSignUpService userSignUpService;
     private final UserEmailSendService userEmailSendService;
     private final UserEmailVerifyService userEmailVerifyService;
+    private final UserTokenRefreshService userTokenRefreshService;
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
@@ -40,10 +44,19 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "로그인", description = "이메일과 비밀번호를 확인하고 JWT 액세스 토큰을 발급합니다.")
+    @Operation(summary = "로그인", description = "이메일과 비밀번호를 확인하고 JWT 액세스 토큰과 리프레시 토큰을 발급합니다.")
     @ApiResponse(responseCode = "200", description = "로그인 성공", useReturnTypeSchema = true)
     public TokenResponse login(@Valid @RequestBody UserLoginRequest request) {
         return userLoginService.execute(request);
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "토큰 재발급", description = "Refresh-Token 헤더의 리프레시 토큰을 확인하고 새로운 액세스 토큰을 발급합니다.")
+    @ApiResponse(responseCode = "200", description = "토큰 재발급 성공", useReturnTypeSchema = true)
+    public AccessTokenResponse refresh(
+            @RequestHeader(value = "Refresh-Token", required = false) String refreshToken
+    ) {
+        return userTokenRefreshService.execute(refreshToken);
     }
 
     @PostMapping("/email/send")
