@@ -3,6 +3,7 @@ package com.example.repo_be_v2.domain.feedback.service;
 import com.example.repo_be_v2.domain.feedback.domain.Feedback;
 import com.example.repo_be_v2.domain.feedback.domain.repository.FeedbackRepository;
 import com.example.repo_be_v2.domain.feedback.presentation.dto.response.FeedbackStatusResponse;
+import com.example.repo_be_v2.domain.feedback.service.support.FeedbackReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

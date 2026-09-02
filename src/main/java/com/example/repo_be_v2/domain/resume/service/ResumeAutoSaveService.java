@@ -5,6 +5,7 @@ import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeAutoSaveRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeAutoSaveResponse;
+import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class ResumeAutoSaveService {
         resumeReader.getUser(userId);
 
         Resume resume = resumeReader.getResumeByUserId(userId);
-        List<ResumePage> pages = resumeReader.toResumePages(request.pages());
+        List<ResumePage> pages = resumeReader.toResumePages(resume, request.pages());
         LocalDateTime savedAt = LocalDateTime.now();
 
         resume.autoSave(pages, savedAt);

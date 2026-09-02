@@ -38,8 +38,7 @@ public enum ErrorCode {
 
     // feedback
     FEEDBACK_NOT_FOUND(404, "해당 피드백을 찾을 수 없습니다."),
-    FEEDBACK_ELEMENT_NOT_FOUND(404, "피드백을 추가할 객체가 없습니다."),
-    FEEDBACK_ALREADY_EXISTS(409, "이미 동일한 위치에 피드백이 존재합니다."),
+    FEEDBACK_PAGE_NOT_FOUND(404, "피드백을 추가할 페이지가 없습니다."),
     FEEDBACK_ACCESS_DENIED(403, "해당 피드백에 접근할 권한이 없습니다."),
     FEEDBACK_NOT_WRITER(403, "본인이 작성한 피드백만 수정하거나 삭제할 수 있습니다."),
     FEEDBACK_NOT_OWNER(403, "본인 이력서의 피드백만 반영 처리할 수 있습니다."),

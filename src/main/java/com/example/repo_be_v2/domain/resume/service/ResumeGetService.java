@@ -5,6 +5,7 @@ import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumePageResponse;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeResponse;
 import com.example.repo_be_v2.domain.user.domain.User;
+import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ public class ResumeGetService {
     private List<ResumePageResponse> toResumePageResponses(List<ResumePage> pages) {
         return pages.stream()
                 .map(page -> new ResumePageResponse(
+                        page.getId(),
                         page.getIndex(),
                         page.getContent()
                 ))

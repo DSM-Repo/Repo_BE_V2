@@ -8,9 +8,7 @@ import java.util.List;
 public interface FeedbackRepository
         extends MongoRepository<Feedback, String> {
 
-    List<Feedback> findAllByResumeIdOrderByPageIndexAscCreatedAtAsc(String resumeId);
+    List<Feedback> findAllByResumeIdOrderByCreatedAtAsc(String resumeId);
 
-    List<Feedback> findAllByResumeIdAndPageIndexOrderByCreatedAtAsc(String resumeId, int pageIndex);
-
-    boolean existsByResumeIdAndElementId(String resumeId, String elementId);
+    List<Feedback> findAllByResumeIdAndPageIdOrderByCreatedAtAsc(String resumeId, String pageId);
 }

@@ -8,7 +8,9 @@ import java.time.LocalDateTime;
 public record FeedbackUpdateResponse(
         String id,
         String content,
-        int pageIndex,
+        String pageId,
+        double x,
+        double y,
         String teacherName,
         LocalDateTime updatedAt
 ) {
@@ -17,7 +19,9 @@ public record FeedbackUpdateResponse(
         return new FeedbackUpdateResponse(
                 feedback.getId(),
                 feedback.getContent(),
-                feedback.getPageIndex(),
+                feedback.getPageId(),
+                feedback.getX(),
+                feedback.getY(),
                 teacher == null ? null : teacher.getStudentName(),
                 feedback.getUpdatedAt()
         );

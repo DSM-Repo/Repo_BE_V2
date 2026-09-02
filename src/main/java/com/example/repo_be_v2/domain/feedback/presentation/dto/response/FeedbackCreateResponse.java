@@ -6,14 +6,18 @@ import java.time.LocalDateTime;
 
 public record FeedbackCreateResponse(
         String feedbackId,
-        int pageIndex,
+        String pageId,
+        double x,
+        double y,
         LocalDateTime createdAt
 ) {
 
     public static FeedbackCreateResponse from(Feedback feedback) {
         return new FeedbackCreateResponse(
                 feedback.getId(),
-                feedback.getPageIndex(),
+                feedback.getPageId(),
+                feedback.getX(),
+                feedback.getY(),
                 feedback.getCreatedAt()
         );
     }

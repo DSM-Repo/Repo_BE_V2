@@ -4,6 +4,7 @@ import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeVisibilityRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeVisibilityResponse;
+import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

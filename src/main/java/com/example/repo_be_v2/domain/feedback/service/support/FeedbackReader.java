@@ -1,12 +1,13 @@
-package com.example.repo_be_v2.domain.feedback.service;
+package com.example.repo_be_v2.domain.feedback.service.support;
 
 import com.example.repo_be_v2.domain.feedback.domain.Feedback;
 import com.example.repo_be_v2.domain.feedback.domain.repository.FeedbackRepository;
 import com.example.repo_be_v2.domain.feedback.exception.FeedbackAccessDeniedException;
-import com.example.repo_be_v2.domain.feedback.exception.FeedbackElementNotFoundException;
+import com.example.repo_be_v2.domain.feedback.exception.FeedbackPageNotFoundException;
 import com.example.repo_be_v2.domain.feedback.exception.FeedbackNotOwnerException;
 import com.example.repo_be_v2.domain.feedback.exception.FeedbackNotWriterException;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
+import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
@@ -91,16 +92,33 @@ public class FeedbackReader {
         }
     }
 
-    //elementId가 들어있는 페이지를 찾아 pageIndex를 계산한다. 없으면 404.
-    public int resolvePageIndex(Resume resume, String elementId) {
+    //피드백을 달 페이지가 실제로 그 이력서에 있는지 확인한다. 없으면 404.
+    public void validatePage(Resume resume, String pageId) {
         if (resume.getPages() == null) {
-            throw new FeedbackElementNotFoundException();
+            throw new FeedbackPageNotFoundException();
+        }
+
+        boolean exists = resume.getPages().stream()
+                .anyMatch(page -> page.hasId(pageId));
+
+        if (!exists) {
+            throw new FeedbackPageNotFoundException();
+        }
+    }
+
+    /**
+     * 피드백이 달린 페이지가 이력서에서 몇 번째인지 돌려준다.
+     * 목록 정렬에만 쓰이므로, 페이지가 지워진 피드백은 맨 뒤로 보낸다.
+     */
+    public int resolvePageOrder(Resume resume, String pageId) {
+        if (resume.getPages() == null) {
+            return Integer.MAX_VALUE;
         }
 
         return resume.getPages().stream()
-                .filter(page -> page.getContent() != null && page.getContent().contains(elementId))
+                .filter(page -> page.hasId(pageId))
+                .mapToInt(ResumePage::getIndex)
                 .findFirst()
-                .orElseThrow(FeedbackElementNotFoundException::new)
-                .getIndex();
+                .orElse(Integer.MAX_VALUE);
     }
 }
