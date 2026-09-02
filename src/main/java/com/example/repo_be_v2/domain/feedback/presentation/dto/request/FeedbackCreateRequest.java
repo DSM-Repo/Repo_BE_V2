@@ -1,18 +1,14 @@
 package com.example.repo_be_v2.domain.feedback.presentation.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
-//명세의 요청 본문이 snake_case라 @JsonProperty로 매핑한다.
 public record FeedbackCreateRequest(
-        @JsonProperty("document_id")
-        @NotBlank(message = "document_id가 비어있습니다")
+        @NotBlank(message = "documentId가 비어있습니다")
         String documentId,
 
-        @JsonProperty("page_id")
-        @NotBlank(message = "page_id가 비어있습니다")
+        @NotBlank(message = "pageId가 비어있습니다")
         String pageId,
 
         //페이지 좌상단 기준 절대 px 좌표

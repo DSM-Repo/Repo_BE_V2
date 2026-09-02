@@ -1,6 +1,5 @@
 package com.example.repo_be_v2.domain.feedback.presentation.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -12,8 +11,7 @@ import jakarta.validation.constraints.PositiveOrZero;
  * 요청으로 문서를 지정하면 피드백의 resumeId와 다른 문서를 가리킬 수 있다.
  */
 public record FeedbackUpdateRequest(
-        @JsonProperty("page_id")
-        @NotBlank(message = "page_id가 비어있습니다")
+        @NotBlank(message = "pageId가 비어있습니다")
         String pageId,
 
         @NotNull(message = "x가 비어있습니다")
