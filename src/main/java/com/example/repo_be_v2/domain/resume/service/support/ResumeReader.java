@@ -1,4 +1,4 @@
-package com.example.repo_be_v2.domain.resume.service;
+package com.example.repo_be_v2.domain.resume.service.support;
 
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;

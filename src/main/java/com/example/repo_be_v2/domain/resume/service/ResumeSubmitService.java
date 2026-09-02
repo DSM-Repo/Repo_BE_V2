@@ -8,6 +8,7 @@ import com.example.repo_be_v2.domain.resume.exception.ResumeAlreadySubmittedExce
 import com.example.repo_be_v2.domain.resume.exception.ResumePageContentRequiredException;
 import com.example.repo_be_v2.domain.resume.exception.ResumePagesRequiredException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeSubmitResponse;
+import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

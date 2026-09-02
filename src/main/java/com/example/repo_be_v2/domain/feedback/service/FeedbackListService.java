@@ -7,6 +7,7 @@ import com.example.repo_be_v2.domain.feedback.presentation.dto.response.Feedback
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
+import com.example.repo_be_v2.domain.feedback.service.support.FeedbackReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

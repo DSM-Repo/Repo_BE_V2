@@ -1,4 +1,4 @@
-package com.example.repo_be_v2.domain.feedback.service;
+package com.example.repo_be_v2.domain.feedback.service.support;
 
 import com.example.repo_be_v2.domain.feedback.domain.Feedback;
 import com.example.repo_be_v2.domain.feedback.domain.repository.FeedbackRepository;
