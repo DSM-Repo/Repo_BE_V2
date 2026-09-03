@@ -15,11 +15,14 @@ public record FeedbackListItemResponse(
         FeedbackStatus status,
         String teacherName,
         LocalDateTime createdAt,
-        LocalDateTime completedAt
+        LocalDateTime completedAt,
+
+        //가리키던 페이지가 이력서에서 지워졌으면 true. 이때 pageId와 x, y는 그릴 자리가 없다.
+        boolean pageDeleted
 ) {
 
     //탈퇴 등으로 선생님 정보가 없으면 이름 없이 내려준다.
-    public static FeedbackListItemResponse from(Feedback feedback, User teacher) {
+    public static FeedbackListItemResponse from(Feedback feedback, User teacher, boolean pageDeleted) {
         return new FeedbackListItemResponse(
                 feedback.getId(),
                 feedback.getPageId(),
@@ -29,7 +32,8 @@ public record FeedbackListItemResponse(
                 feedback.getStatus(),
                 teacher == null ? null : teacher.getStudentName(),
                 feedback.getCreatedAt(),
-                feedback.getCompletedAt()
+                feedback.getCompletedAt(),
+                pageDeleted
         );
     }
 }

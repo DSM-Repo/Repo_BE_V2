@@ -34,6 +34,9 @@ public class FeedbackListService {
      * pageId를 주면 해당 페이지의 피드백만 내려준다.
      * 정렬은 페이지 순서 오름차순, 같은 페이지 안에서는 생성 시각 오름차순.
      * 페이지 순서는 이력서가 들고 있는 값이라 조회 시점에 계산한다.
+     *
+     * 학생이 페이지를 지워도 그 페이지에 달렸던 피드백은 남으므로,
+     * 지워진 페이지를 가리키는 피드백은 pageDeleted로 표시해 맨 뒤로 보낸다.
      */
     @Transactional(readOnly = true)
     public FeedbackListResponse execute(Long userId, String documentId, String pageId) {
@@ -42,11 +45,17 @@ public class FeedbackListService {
         Resume resume = feedbackReader.getResume(documentId);
         feedbackReader.validateReadable(requester, resume);
 
-        List<Feedback> feedbacks = sortByPageOrder(resume, findFeedbacks(resume.getId(), pageId));
+        Map<String, Integer> pageOrders = feedbackReader.resolvePageOrders(resume);
+
+        List<Feedback> feedbacks = sortByPageOrder(pageOrders, findFeedbacks(resume.getId(), pageId));
         Map<Long, User> teachers = findTeachers(feedbacks);
 
         List<FeedbackListItemResponse> responses = feedbacks.stream()
-                .map(feedback -> FeedbackListItemResponse.from(feedback, teachers.get(feedback.getTeacherId())))
+                .map(feedback -> FeedbackListItemResponse.from(
+                        feedback,
+                        teachers.get(feedback.getTeacherId()),
+                        !pageOrders.containsKey(feedback.getPageId())
+                ))
                 .toList();
 
         return new FeedbackListResponse(responses, responses.size());
@@ -61,10 +70,11 @@ public class FeedbackListService {
     }
 
     //DB는 생성 시각 순으로만 내려주므로 페이지 순서는 여기서 맞춘다. 같은 페이지 안의 순서는 유지된다.
-    private List<Feedback> sortByPageOrder(Resume resume, List<Feedback> feedbacks) {
+    //맵에 없는 pageId는 지워진 페이지라 맨 뒤로 보낸다.
+    private List<Feedback> sortByPageOrder(Map<String, Integer> pageOrders, List<Feedback> feedbacks) {
         return feedbacks.stream()
                 .sorted(Comparator.comparingInt(
-                        feedback -> feedbackReader.resolvePageOrder(resume, feedback.getPageId())
+                        feedback -> pageOrders.getOrDefault(feedback.getPageId(), Integer.MAX_VALUE)
                 ))
                 .toList();
     }

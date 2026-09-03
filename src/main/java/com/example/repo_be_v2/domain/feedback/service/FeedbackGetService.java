@@ -19,6 +19,7 @@ public class FeedbackGetService {
      * 피드백 단건 조회
      *
      * 학생은 본인 이력서에 달린 피드백만, 선생님은 모든 피드백을 볼 수 있다.
+     * 가리키던 페이지가 지워졌으면 pageDeleted로 알린다.
      */
     @Transactional(readOnly = true)
     public FeedbackResponse execute(Long userId, String feedbackId) {
@@ -29,6 +30,9 @@ public class FeedbackGetService {
         Resume resume = feedbackReader.getResume(feedback.getResumeId());
         feedbackReader.validateReadable(requester, resume);
 
-        return FeedbackResponse.from(feedback);
+        boolean pageDeleted = !feedbackReader.resolvePageOrders(resume)
+                .containsKey(feedback.getPageId());
+
+        return FeedbackResponse.from(feedback, pageDeleted);
     }
 }
