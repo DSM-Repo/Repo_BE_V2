@@ -21,6 +21,9 @@ import com.example.repo_be_v2.domain.feedback.exception.FeedbackNotFoundExceptio
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 //피드백 서비스들이 공통으로 쓰는 조회와 검증을 모아둔다.
 @Component
 @RequiredArgsConstructor
@@ -107,18 +110,25 @@ public class FeedbackReader {
     }
 
     /**
-     * 피드백이 달린 페이지가 이력서에서 몇 번째인지 돌려준다.
-     * 목록 정렬에만 쓰이므로, 페이지가 지워진 피드백은 맨 뒤로 보낸다.
+     * 이력서가 지금 들고 있는 페이지들의 id → 순서(index) 맵.
+     *
+     * 피드백 목록 정렬과 "가리키던 페이지가 사라졌는지" 판정에 함께 쓴다.
+     * 맵에 없는 pageId는 이력서에서 지워진 페이지라는 뜻이다.
+     *
+     * 같은 id를 가진 페이지가 둘 이상 저장돼 있을 수 있어(저장 시 id 중복을 막지 않는다)
+     * 먼저 나온 것을 채택한다. merge 함수가 없으면 조회 자체가 실패한다.
      */
-    public int resolvePageOrder(Resume resume, String pageId) {
+    public Map<String, Integer> resolvePageOrders(Resume resume) {
         if (resume.getPages() == null) {
-            return Integer.MAX_VALUE;
+            return Map.of();
         }
 
         return resume.getPages().stream()
-                .filter(page -> page.hasId(pageId))
-                .mapToInt(ResumePage::getIndex)
-                .findFirst()
-                .orElse(Integer.MAX_VALUE);
+                .filter(page -> page.getId() != null)
+                .collect(Collectors.toMap(
+                        ResumePage::getId,
+                        ResumePage::getIndex,
+                        (first, second) -> first
+                ));
     }
 }

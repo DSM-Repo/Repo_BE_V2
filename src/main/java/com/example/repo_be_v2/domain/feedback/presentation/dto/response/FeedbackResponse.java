@@ -12,10 +12,13 @@ public record FeedbackResponse(
         double y,
         String content,
         FeedbackStatus status,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+
+        //가리키던 페이지가 이력서에서 지워졌으면 true. 이때 pageId와 x, y는 그릴 자리가 없다.
+        boolean pageDeleted
 ) {
 
-    public static FeedbackResponse from(Feedback feedback) {
+    public static FeedbackResponse from(Feedback feedback, boolean pageDeleted) {
         return new FeedbackResponse(
                 feedback.getId(),
                 feedback.getPageId(),
@@ -23,7 +26,8 @@ public record FeedbackResponse(
                 feedback.getY(),
                 feedback.getContent(),
                 feedback.getStatus(),
-                feedback.getCreatedAt()
+                feedback.getCreatedAt(),
+                pageDeleted
         );
     }
 }
