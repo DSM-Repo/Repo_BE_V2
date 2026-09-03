@@ -45,6 +45,11 @@ public enum ErrorCode {
     FEEDBACK_ALREADY_COMPLETED(409, "이미 처리한 피드백입니다."),
     FEEDBACK_NOT_COMPLETED(409, "아직 반영 처리되지 않은 피드백입니다."),
     FEEDBACK_APPLY_LIMIT_EXCEEDED(400, "한 번에 처리할 수 있는 피드백 수를 초과했습니다."),
+
+    // image
+    IMAGE_EMPTY(400, "업로드할 이미지가 없습니다."),
+    IMAGE_TYPE_NOT_SUPPORTED(400, "지원하지 않는 이미지 형식입니다."),
+    IMAGE_UPLOAD_FAILED(500, "이미지 업로드에 실패했습니다."),
     ;
 
     private final int statusCode;
