@@ -46,6 +46,11 @@ public enum ErrorCode {
     FEEDBACK_NOT_COMPLETED(409, "아직 반영 처리되지 않은 피드백입니다."),
     FEEDBACK_APPLY_LIMIT_EXCEEDED(400, "한 번에 처리할 수 있는 피드백 수를 초과했습니다."),
 
+    // major
+    MAJOR_NOT_FOUND(404, "전공을 찾을 수 없습니다."),
+    MAJOR_ALREADY_EXISTS(409, "이미 존재하는 전공입니다."),
+    MAJOR_IN_USE(409, "사용 중인 전공은 삭제할 수 없습니다."),
+
     // image
     IMAGE_EMPTY(400, "업로드할 이미지가 없습니다."),
     IMAGE_TYPE_NOT_SUPPORTED(400, "지원하지 않는 이미지 형식입니다."),

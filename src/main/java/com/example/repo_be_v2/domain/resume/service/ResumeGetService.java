@@ -31,7 +31,7 @@ public class ResumeGetService {
                 resume.getPortfolioUrl(),
                 resume.isPublic(),
                 null,
-                user.getStudentMajor(),
+                user.getMajorName(),
                 resume.getSubmissionStatus(),
                 resume.getSavedAt(),
                 toResumePageResponses(resume.getPages())

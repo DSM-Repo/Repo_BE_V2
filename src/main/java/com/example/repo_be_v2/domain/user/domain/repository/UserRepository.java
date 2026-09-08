@@ -9,4 +9,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByStudentEmail(String studentEmail);
 
     Optional<User> findByStudentEmail(String studentEmail);
+
+    //전공 삭제 전 사용 중인지 판정한다.
+    long countByMajorId(Long majorId);
 }

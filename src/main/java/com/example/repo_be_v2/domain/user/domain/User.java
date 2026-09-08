@@ -1,5 +1,6 @@
 package com.example.repo_be_v2.domain.user.domain;
 
+import com.example.repo_be_v2.domain.major.domain.Major;
 import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -36,11 +37,17 @@ public class User {
     @Column(name = "student_password", nullable = false)
     private String studentPassword;
 
-    @Column(name = "student_major")
-    private String studentMajor;
+    //전공은 카탈로그(tbl_major)에서 고른 값이다. 아직 고르지 않았으면 null이다.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "major_id")
+    private Major major;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
+    //전공을 고르지 않은 사용자도 있으므로 이름은 없을 수 있다.
+    public String getMajorName() {
+        return major == null ? null : major.getName();
+    }
 }
