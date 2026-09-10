@@ -1,14 +1,7 @@
 package com.example.repo_be_v2.domain.major.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 /**
  * 학생이 고를 수 있는 전공 카탈로그.
@@ -17,9 +10,11 @@ import lombok.NoArgsConstructor;
  * 이름을 유일 제약으로 막아 같은 전공이 두 번 등록되지 않게 한다.
  */
 @Entity
-@Table(name = "tbl_major")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
+@Getter
+@Table(name = "tbl_major")
 public class Major {
 
     @Id
@@ -31,10 +26,8 @@ public class Major {
     private String name;
 
     public static Major create(String name) {
-        Major major = new Major();
-
-        major.name = name;
-
-        return major;
+        return Major.builder()
+                .name(name)
+                .build();
     }
 }
