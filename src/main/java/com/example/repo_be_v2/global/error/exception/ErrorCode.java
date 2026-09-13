@@ -51,6 +51,9 @@ public enum ErrorCode {
     MAJOR_ALREADY_EXISTS(409, "이미 존재하는 전공입니다."),
     MAJOR_IN_USE(409, "사용 중인 전공은 삭제할 수 없습니다."),
 
+    // library
+    LIBRARY_RESUME_NOT_FOUND(404, "공개된 이력서를 찾을 수 없습니다."),
+
     // image
     IMAGE_EMPTY(400, "업로드할 이미지가 없습니다."),
     IMAGE_TYPE_NOT_SUPPORTED(400, "지원하지 않는 이미지 형식입니다."),
