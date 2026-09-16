@@ -3,17 +3,24 @@ package com.example.repo_be_v2.domain.resume.service.support;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
+import com.example.repo_be_v2.domain.resume.domain.repository.ResumeStatusSummary;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumePageRequest;
 import com.example.repo_be_v2.domain.user.domain.User;
+import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
+import com.example.repo_be_v2.domain.user.exception.TeacherPermissionRequiredException;
 import com.example.repo_be_v2.domain.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 //이력서 서비스들이 공통으로 쓰는 조회와 변환을 모아둔다.
 @Component
@@ -27,6 +34,47 @@ public class ResumeReader {
     public User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    //선생님 권한을 가진 사용자인지 확인 (학생 제출 현황 조회용)
+    public User getTeacher(Long userId) {
+        User user = getUser(userId);
+
+        if (user.getRole() != Role.TEACHER) {
+            throw new TeacherPermissionRequiredException();
+        }
+
+        return user;
+    }
+
+    //학생 목록. 학년·반이 null이면 그 조건은 걸지 않는다.
+    public List<User> getStudents(Integer grade, Integer classNumber) {
+        return userRepository.findStudents(Role.STUDENT, grade, classNumber);
+    }
+
+    /**
+     * 학생별 이력서 상태를 userId로 찾을 수 있게 묶는다.
+     *
+     * 이력서는 학생당 하나(userId unique)라 Map으로 바로 만들 수 있다.
+     * 아직 이력서를 만들지 않은 학생은 Map에 없고, 호출부가 미제출로 취급한다.
+     */
+    public Map<Long, ResumeStatusSummary> getResumeStatusByUserId(Collection<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return resumeRepository.findByUserIdIn(userIds)
+                .stream()
+                .collect(Collectors.toMap(ResumeStatusSummary::getUserId, Function.identity()));
+    }
+
+    //학번은 학년·반·번호를 이어 붙인다. (1학년 3반 5번 -> "1305")
+    public String schoolNumberOf(User user) {
+        return "%d%d%02d".formatted(
+                user.getStudentGrade(),
+                user.getStudentClass(),
+                user.getStudentNumber()
+        );
     }
 
     //유저 소유의 이력서를 id 기준으로 조회
