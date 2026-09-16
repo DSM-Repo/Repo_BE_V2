@@ -35,8 +35,7 @@ public class UserMypageService {
 
         return new UserMypageResponse(
                 user.getStudentName(),
-                null,
-                null,
+                user.getProfileImageUrl(),
                 resume == null ? null : resume.getIntroduce(),
                 user.getMajorName(),
                 new ClassInfoResponse(

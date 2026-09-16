@@ -4,6 +4,7 @@ import com.example.repo_be_v2.domain.user.presentation.dto.request.EmailVerifica
 import com.example.repo_be_v2.domain.user.presentation.dto.request.EmailVerificationSendRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserLoginRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
+import com.example.repo_be_v2.domain.user.presentation.dto.request.UserUpdateRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.AccessTokenResponse;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.TokenResponse;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.UserMypageResponse;
@@ -13,6 +14,7 @@ import com.example.repo_be_v2.domain.user.service.UserLoginService;
 import com.example.repo_be_v2.domain.user.service.UserMypageService;
 import com.example.repo_be_v2.domain.user.service.UserSignUpService;
 import com.example.repo_be_v2.domain.user.service.UserTokenRefreshService;
+import com.example.repo_be_v2.domain.user.service.UserUpdateService;
 import com.example.repo_be_v2.global.config.OpenApiConfig;
 import com.example.repo_be_v2.global.security.auth.AuthDetail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -35,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
-@Tag(name = "User", description = "회원가입, 로그인, 이메일 인증, 내 정보 조회 API")
+@Tag(name = "User", description = "회원가입, 로그인, 이메일 인증, 내 정보 조회·수정 API")
 public class UserController {
     private final UserLoginService userLoginService;
     private final UserSignUpService userSignUpService;
@@ -43,6 +46,7 @@ public class UserController {
     private final UserEmailVerifyService userEmailVerifyService;
     private final UserTokenRefreshService userTokenRefreshService;
     private final UserMypageService userMypageService;
+    private final UserUpdateService userUpdateService;
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
@@ -96,5 +100,21 @@ public class UserController {
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth
     ) {
         return userMypageService.execute(auth.getId());
+    }
+
+    // 내 정보 수정 (인증된 사용자) — 전공 선택, 프로필 이미지
+    @PatchMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
+    @Operation(
+            summary = "내 정보 수정",
+            description = "전공과 프로필 이미지를 수정합니다. 보낸 필드만 바뀝니다. 프로필 이미지는 POST /image로 먼저 올린 URL을 보냅니다."
+    )
+    @ApiResponse(responseCode = "204", description = "내 정보 수정 성공")
+    public void updateMypage(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
+            @Valid @RequestBody UserUpdateRequest request
+    ) {
+        userUpdateService.execute(auth.getId(), request);
     }
 }
