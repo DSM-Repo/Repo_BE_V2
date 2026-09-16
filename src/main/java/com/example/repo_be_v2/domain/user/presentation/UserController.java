@@ -6,17 +6,25 @@ import com.example.repo_be_v2.domain.user.presentation.dto.request.UserLoginRequ
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.AccessTokenResponse;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.TokenResponse;
+import com.example.repo_be_v2.domain.user.presentation.dto.response.UserMypageResponse;
 import com.example.repo_be_v2.domain.user.service.UserEmailSendService;
 import com.example.repo_be_v2.domain.user.service.UserEmailVerifyService;
 import com.example.repo_be_v2.domain.user.service.UserLoginService;
+import com.example.repo_be_v2.domain.user.service.UserMypageService;
 import com.example.repo_be_v2.domain.user.service.UserSignUpService;
 import com.example.repo_be_v2.domain.user.service.UserTokenRefreshService;
+import com.example.repo_be_v2.global.config.OpenApiConfig;
+import com.example.repo_be_v2.global.security.auth.AuthDetail;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -27,13 +35,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
-@Tag(name = "User", description = "회원가입, 로그인, 이메일 인증 API")
+@Tag(name = "User", description = "회원가입, 로그인, 이메일 인증, 내 정보 조회 API")
 public class UserController {
     private final UserLoginService userLoginService;
     private final UserSignUpService userSignUpService;
     private final UserEmailSendService userEmailSendService;
     private final UserEmailVerifyService userEmailVerifyService;
     private final UserTokenRefreshService userTokenRefreshService;
+    private final UserMypageService userMypageService;
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
@@ -73,5 +82,19 @@ public class UserController {
     @ApiResponse(responseCode = "204", description = "이메일 인증 성공")
     public void verifyEmail(@Valid @RequestBody EmailVerificationConfirmRequest request) {
         userEmailVerifyService.execute(request);
+    }
+
+    // 내 정보 조회 (인증된 사용자) — 홈 화면용, 이력서 작성 진행률 포함
+    @GetMapping
+    @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
+    @Operation(
+            summary = "내 정보 조회",
+            description = "로그인한 사용자의 정보, 한줄소개, 이력서 작성 진행률을 한 번에 조회합니다. 이력서가 없으면 진행률은 0%입니다."
+    )
+    @ApiResponse(responseCode = "200", description = "내 정보 조회 성공", useReturnTypeSchema = true)
+    public UserMypageResponse getMypage(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth
+    ) {
+        return userMypageService.execute(auth.getId());
     }
 }
