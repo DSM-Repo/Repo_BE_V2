@@ -1,6 +1,7 @@
 package com.example.repo_be_v2.domain.user.domain.repository;
 
 import com.example.repo_be_v2.domain.user.domain.User;
+import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -49,5 +51,25 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("keyword") String keyword,
             @Param("majorName") String majorName,
             Pageable pageable
+    );
+
+    /**
+     * 선생님이 보는 학생 목록. 학년·반을 주면 그 반만, 비우면 전교생이다.
+     *
+     * 선생님 계정도 같은 테이블에 있어서 role로 학생만 거른다.
+     * 학번순(학년·반·번호)으로 정렬해 화면 순서를 그대로 쓸 수 있게 한다.
+     */
+    @Query("""
+            select u from User u
+            left join fetch u.major
+            where u.role = :role
+              and (:grade is null or u.studentGrade = :grade)
+              and (:classNumber is null or u.studentClass = :classNumber)
+            order by u.studentGrade asc, u.studentClass asc, u.studentNumber asc
+            """)
+    List<User> findStudents(
+            @Param("role") Role role,
+            @Param("grade") Integer grade,
+            @Param("classNumber") Integer classNumber
     );
 }
