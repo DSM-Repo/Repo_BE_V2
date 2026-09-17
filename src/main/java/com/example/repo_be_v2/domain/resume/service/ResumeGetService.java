@@ -30,7 +30,7 @@ public class ResumeGetService {
                 resume.getIntroduce(),
                 resume.getPortfolioUrl(),
                 resume.isPublic(),
-                null,
+                user.getProfileImageUrl(),
                 user.getMajorName(),
                 resume.getSubmissionStatus(),
                 resume.getSavedAt(),
