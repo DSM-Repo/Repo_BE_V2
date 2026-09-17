@@ -1,6 +1,5 @@
 package com.example.repo_be_v2.domain.resume.presentation;
 
-import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeAutoSaveRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeSaveRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeVisibilityRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.*;
@@ -75,11 +74,11 @@ public class ResumeController {
 
     // 이력서 자동저장
     @PostMapping("/auto-save")
-    @Operation(summary = "이력서 자동 저장", description = "작성 중인 이력서 페이지 내용을 자동 저장합니다.")
+    @Operation(summary = "이력서 자동 저장", description = "작성 중인 이력서를 자동 저장합니다. 요청 형식은 저장과 같고, 이력서가 없으면 새로 만듭니다.")
     @ApiResponse(responseCode = "200", description = "자동 저장 성공", useReturnTypeSchema = true)
     public ResumeAutoSaveResponse autoSaveResume(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
-            @Valid @RequestBody ResumeAutoSaveRequest request
+            @Valid @RequestBody ResumeSaveRequest request
     ) {
         return resumeAutoSaveService.execute(auth.getId(), request);
     }

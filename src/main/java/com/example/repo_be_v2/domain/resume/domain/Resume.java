@@ -25,6 +25,14 @@ public class Resume {
 
     private String introduce;
 
+    /**
+     * 첫 장 머리말에 적는 연락용 이메일.
+     * 로그인 계정(User.studentEmail)과는 별개로 학생이 직접 적는 값이다.
+     */
+    private String email;
+
+    private List<String> skills;
+
     private String portfolioUrl;
 
     private boolean isPublic;
@@ -44,6 +52,8 @@ public class Resume {
     public static Resume create(
             Long userId,
             String introduce,
+            String email,
+            List<String> skills,
             String portfolioUrl,
             List<ResumePage> pages,
             LocalDateTime savedAt
@@ -52,6 +62,8 @@ public class Resume {
 
         resume.userId = userId;
         resume.introduce = introduce;
+        resume.email = email;
+        resume.skills = nullToEmpty(skills);
         resume.portfolioUrl = portfolioUrl;
         resume.isPublic = false;
         resume.submissionStatus = ResumeSubmissionStatus.ONGOING;
@@ -61,8 +73,16 @@ public class Resume {
         return resume;
     }
 
+    /**
+     * 이력서 본문 저장.
+     *
+     * 수동 저장과 자동 저장이 같은 요청을 쓰므로 저장 경로도 하나다.
+     * 자동 저장이 머리말만 빼고 덮어쓰면 기술스택이나 이메일이 되돌아가기 때문이다.
+     */
     public void save(
             String introduce,
+            String email,
+            List<String> skills,
             String portfolioUrl,
             List<ResumePage> pages,
             LocalDateTime savedAt
@@ -70,14 +90,9 @@ public class Resume {
         assertEditable();
 
         this.introduce = introduce;
+        this.email = email;
+        this.skills = nullToEmpty(skills);
         this.portfolioUrl = portfolioUrl;
-        this.pages = pages;
-        this.savedAt = savedAt;
-    }
-
-    public void autoSave(List<ResumePage> pages, LocalDateTime savedAt) {
-        assertEditable();
-
         this.pages = pages;
         this.savedAt = savedAt;
     }
@@ -132,9 +147,17 @@ public class Resume {
         this.deletedAt = deletedAt;
     }
 
+    public List<String> getSkills() {
+        return nullToEmpty(skills);
+    }
+
     private void assertEditable() {
         if (submissionStatus != ResumeSubmissionStatus.ONGOING) {
             throw new ResumeNotEditableException();
         }
+    }
+
+    private static List<String> nullToEmpty(List<String> skills) {
+        return skills == null ? List.of() : List.copyOf(skills);
     }
 }

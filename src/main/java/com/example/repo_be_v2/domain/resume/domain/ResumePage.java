@@ -1,5 +1,6 @@
 package com.example.repo_be_v2.domain.resume.domain;
 
+import com.example.repo_be_v2.domain.resume.domain.enums.ResumePageType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,10 +20,24 @@ public class ResumePage {
 
     private int index;
 
+    private ResumePageType type;
+
+    //PROJECT 페이지에만 있다. 나머지 종류에서는 null이다.
+    private ResumeProject project;
+
+    //마크다운 원문. 서버는 해석하지 않고 그대로 저장하고 그대로 돌려준다.
     private String content;
 
     public boolean hasId(String id) {
         return this.id != null && this.id.equals(id);
     }
 
+    //종류가 생기기 전에 저장된 페이지는 머리말이 없는 자유 페이지로 본다.
+    public ResumePageType getType() {
+        return type == null ? ResumePageType.FREE : type;
+    }
+
+    public boolean isProject() {
+        return getType() == ResumePageType.PROJECT;
+    }
 }

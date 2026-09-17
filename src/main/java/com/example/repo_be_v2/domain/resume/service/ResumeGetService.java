@@ -18,7 +18,12 @@ public class ResumeGetService {
 
     private final ResumeReader resumeReader;
 
-    //내 이력서 조회
+    /**
+     * 내 이력서 조회
+     *
+     * 저장한 구조를 그대로 돌려준다.
+     * 이름, 전공, 프로필 사진은 이력서에 없는 값이라 사용자 정보에서 채워 넣는다.
+     */
     @Transactional(readOnly = true)
     public ResumeResponse execute(Long userId, String resumeId) {
         User user = resumeReader.getUser(userId);
@@ -28,6 +33,8 @@ public class ResumeGetService {
                 resume.getId(),
                 user.getStudentName(),
                 resume.getIntroduce(),
+                resume.getEmail(),
+                resume.getSkills(),
                 resume.getPortfolioUrl(),
                 resume.isPublic(),
                 user.getProfileImageUrl(),
@@ -39,12 +46,12 @@ public class ResumeGetService {
     }
 
     private List<ResumePageResponse> toResumePageResponses(List<ResumePage> pages) {
+        if (pages == null) {
+            return List.of();
+        }
+
         return pages.stream()
-                .map(page -> new ResumePageResponse(
-                        page.getId(),
-                        page.getIndex(),
-                        page.getContent()
-                ))
+                .map(ResumePageResponse::from)
                 .toList();
     }
 }

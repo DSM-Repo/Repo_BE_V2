@@ -2,10 +2,13 @@ package com.example.repo_be_v2.domain.resume.service.support;
 
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;
+import com.example.repo_be_v2.domain.resume.domain.ResumeProject;
+import com.example.repo_be_v2.domain.resume.domain.enums.ResumePageType;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeStatusSummary;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumePageRequest;
+import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeProjectRequest;
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
@@ -94,7 +97,7 @@ public class ResumeReader {
      *
      * 페이지 id는 피드백이 물고 있는 값이라 저장할 때마다 새로 만들면 안 된다.
      * 요청이 id를 들고 오면 그대로 쓰고,
-     * 비워서 보내면 같은 자리에 있던 기존 페이지의 id를 물려준다.
+     * 비워서 보내면 같은 자리에 있던 기존 페이지의 id를 물려받는다.
      * 둘 다 없을 때(새 페이지, id 없이 저장된 옛 데이터)만 새로 발급한다.
      */
     public List<ResumePage> toResumePages(Resume resume, List<ResumePageRequest> pageRequests) {
@@ -104,9 +107,28 @@ public class ResumeReader {
                 .map(page -> new ResumePage(
                         resolvePageId(previousPages, page),
                         page.index(),
+                        page.type(),
+                        toResumeProject(page),
                         page.content()
                 ))
                 .toList();
+    }
+
+    //머리말은 프로젝트 페이지에만 있다. 다른 종류로 실려오면 버린다.
+    private ResumeProject toResumeProject(ResumePageRequest page) {
+        if (page.type() != ResumePageType.PROJECT || page.project() == null) {
+            return null;
+        }
+
+        ResumeProjectRequest project = page.project();
+
+        return ResumeProject.of(
+                project.name(),
+                project.imageUrl(),
+                project.summary(),
+                project.startDate(),
+                project.endDate()
+        );
     }
 
     private String resolvePageId(List<ResumePage> previousPages, ResumePageRequest request) {

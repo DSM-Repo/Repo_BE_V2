@@ -21,7 +21,7 @@ public class LibraryGetService {
     /**
      * 학생 이력서 단일 조회
      *
-     * 이력서 본문은 작성된 HTML을 그대로 내려준다.
+     * 이력서 본문은 작성된 마크다운을 그대로 내려준다.
      * 도서관은 선배들의 이력서를 그대로 보는 곳이라 따로 가공하지 않는다.
      */
     @Transactional(readOnly = true)
@@ -40,10 +40,11 @@ public class LibraryGetService {
                 student.getId(),
                 student.getStudentName(),
                 libraryReader.studentNumberOf(grade, student),
-                student.getStudentEmail(),
+                emailOf(resume, student),
                 student.getMajorName(),
-                null,
+                student.getProfileImageUrl(),
                 resume.getIntroduce(),
+                resume.getSkills(),
                 resume.getPortfolioUrl(),
                 schoolYear,
                 grade,
@@ -59,11 +60,21 @@ public class LibraryGetService {
         }
 
         return pages.stream()
-                .map(page -> new LibraryResumePageResponse(
-                        page.getId(),
-                        page.getIndex(),
-                        page.getContent()
-                ))
+                .map(LibraryResumePageResponse::from)
                 .toList();
+    }
+
+    /**
+     * 도서관에 보여줄 이메일.
+     *
+     * 첫 장에 적은 연락용 이메일을 우선 쓰고,
+     * 아직 적지 않았으면 학교 계정 이메일로 대신한다.
+     */
+    private String emailOf(Resume resume, User student) {
+        String email = resume.getEmail();
+
+        return email == null || email.isBlank()
+                ? student.getStudentEmail()
+                : email;
     }
 }
