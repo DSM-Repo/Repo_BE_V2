@@ -21,11 +21,13 @@ public class ResumeSaveService {
     private final ResumeReader resumeReader;
 
     /**
-     * 이력서 수동 저장
+     * 이력서 저장
      *
      * 이력서가 없으면 새로 만들고,
      * 이미 있으면 기존 이력서를 수정한다.
      * 페이지 id를 물려받아야 하므로 기존 이력서를 먼저 조회한 뒤 페이지를 변환한다.
+     *
+     * 자동 저장도 이 경로를 그대로 쓴다.
      */
     @Transactional
     public ResumeSaveResponse execute(Long userId, ResumeSaveRequest request) {
@@ -56,6 +58,8 @@ public class ResumeSaveService {
             return Resume.create(
                     userId,
                     request.introduce(),
+                    request.email(),
+                    request.skills(),
                     request.portfolioUrl(),
                     pages,
                     savedAt
@@ -64,6 +68,8 @@ public class ResumeSaveService {
 
         existingResume.save(
                 request.introduce(),
+                request.email(),
+                request.skills(),
                 request.portfolioUrl(),
                 pages,
                 savedAt

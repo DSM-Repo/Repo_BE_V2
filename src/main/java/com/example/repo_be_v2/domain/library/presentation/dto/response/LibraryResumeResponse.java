@@ -18,6 +18,7 @@ public record LibraryResumeResponse(
         String majorName,
         String profileImageUrl,
         String introduce,
+        List<String> skills,
         String portfolioUrl,
         int date,
         int year,
