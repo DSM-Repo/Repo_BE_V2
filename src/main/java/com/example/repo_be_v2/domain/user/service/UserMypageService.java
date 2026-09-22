@@ -9,6 +9,7 @@ import com.example.repo_be_v2.domain.user.service.support.UserReader;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
+import com.example.repo_be_v2.domain.notification.service.NotificationListService;
 import com.example.repo_be_v2.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,12 @@ import java.util.List;
 public class UserMypageService {
 
     private final UserReader userReader;
+    private final NotificationListService notificationListService;
 
     /**
      * 마이페이지(홈) 조회
      *
-     * 내 정보와 이력서 작성 진행률을 한 번에 돌려준다.
+     * 내 정보와 이력서 작성 진행률, 알림 목록을 한 번에 돌려준다.
      * 화면이 하나라 API도 하나로 합쳤다.
      */
     @Transactional(readOnly = true)
@@ -44,7 +46,8 @@ public class UserMypageService {
                         user.getStudentNumber(),
                         userReader.schoolNumberOf(user)
                 ),
-                toProgress(resume)
+                toProgress(resume),
+                notificationListService.execute(userId)
         );
     }
 
