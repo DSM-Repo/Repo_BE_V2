@@ -5,6 +5,7 @@ import com.example.repo_be_v2.domain.notification.domain.repository.Notification
 import com.example.repo_be_v2.domain.notification.service.support.NotificationReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +15,7 @@ public class NotificationDeleteService {
     private final NotificationReader notificationReader;
 
     //알림 삭제. 본인 알림만 지울 수 있다.
+    @Transactional
     public void execute(Long userId, String notificationId) {
         Notification notification = notificationReader.getOwnedNotification(userId, notificationId);
 

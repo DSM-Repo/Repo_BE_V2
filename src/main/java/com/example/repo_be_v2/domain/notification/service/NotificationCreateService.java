@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -25,7 +26,8 @@ public class NotificationCreateService {
      * 여기서 예외를 삼키고 로그만 남긴다. 알림 한 건이 빠지는 것보다 피드백이 사라지는 쪽이 나쁘다.
      */
     @EventListener
-    public void on(FeedbackCreatedEvent event) {
+    @Transactional
+    public void execute(FeedbackCreatedEvent event) {
         try {
             notificationRepository.save(
                     Notification.builder()
