@@ -53,6 +53,10 @@ public enum ErrorCode {
     MAJOR_ALREADY_EXISTS(409, "이미 존재하는 전공입니다."),
     MAJOR_IN_USE(409, "사용 중인 전공은 삭제할 수 없습니다."),
 
+    // notification
+    NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
+    NOTIFICATION_ACCESS_DENIED(403, "본인의 알림만 처리할 수 있습니다."),
+
     // library
     LIBRARY_RESUME_NOT_FOUND(404, "공개된 이력서를 찾을 수 없습니다."),
 
