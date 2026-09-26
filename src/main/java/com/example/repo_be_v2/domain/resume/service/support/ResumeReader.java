@@ -1,11 +1,13 @@
 package com.example.repo_be_v2.domain.resume.service.support;
 
 import com.example.repo_be_v2.domain.resume.domain.Resume;
+import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.domain.ResumeProject;
 import com.example.repo_be_v2.domain.resume.domain.enums.ResumePageType;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeStatusSummary;
+import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumePageRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeProjectRequest;
@@ -87,6 +89,23 @@ public class ResumeReader {
     }
 
     //유저 소유의 이력서를 조회
+    /**
+     * 선생님이 보는 학생 이력서.
+     *
+     * 피드백을 달려면 제출 전 이력서도 봐야 하므로 작성 중(ONGOING)도 그대로 내려준다.
+     * 삭제된 이력서만 막는데, 이는 피드백 조회와 같은 규칙이다.
+     */
+    public Resume getStudentResume(Long studentId) {
+        Resume resume = resumeRepository.findByUserId(studentId)
+                .orElseThrow(ResumeNotFoundException::new);
+
+        if (resume.getSubmissionStatus() == ResumeSubmissionStatus.DELETED) {
+            throw new ResumeDeletedException();
+        }
+
+        return resume;
+    }
+
     public Resume getResumeByUserId(Long userId) {
         return resumeRepository.findByUserId(userId)
                 .orElseThrow(ResumeNotFoundException::new);

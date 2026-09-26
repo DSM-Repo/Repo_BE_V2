@@ -30,6 +30,7 @@ public class ResumeController {
     private final ResumeCancelSubmitService resumeCancelSubmitService;
     private final ResumeVisibilityService resumeVisibilityService;
     private final ResumeStudentListService resumeStudentListService;
+    private final ResumeStudentGetService resumeStudentGetService;
 
     // 학생 이력서 제출 현황 조회 (선생님 권한)
     // "/students"는 고정 경로라 "/{resumeId}"보다 우선 매칭된다.
@@ -47,6 +48,22 @@ public class ResumeController {
             @RequestParam(required = false) Integer classNumber
     ) {
         return resumeStudentListService.execute(auth.getId(), grade, classNumber);
+    }
+
+    // 학생 이력서 조회 (선생님 권한)
+    // "/students/{studentId}"도 고정 접두사라 "/{resumeId}"보다 우선 매칭된다.
+    @GetMapping("/students/{studentId}")
+    @Operation(
+            summary = "학생 이력서 조회",
+            description = "선생님이 특정 학생의 이력서 본문을 조회합니다. 피드백을 달 화면에서 쓰이므로 작성 중이거나 비공개인 이력서도 조회됩니다. 삭제된 이력서는 조회되지 않습니다."
+    )
+    @ApiResponse(responseCode = "200", description = "학생 이력서 조회 성공", useReturnTypeSchema = true)
+    public ResumeResponse getStudentResume(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
+            @Parameter(description = "조회할 학생 ID", example = "1")
+            @PathVariable Long studentId
+    ) {
+        return resumeStudentGetService.execute(auth.getId(), studentId);
     }
 
     //내 이력서 조회

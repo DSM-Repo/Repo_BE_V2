@@ -1,16 +1,12 @@
 package com.example.repo_be_v2.domain.resume.service;
 
 import com.example.repo_be_v2.domain.resume.domain.Resume;
-import com.example.repo_be_v2.domain.resume.domain.ResumePage;
-import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumePageResponse;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeResponse;
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,29 +25,6 @@ public class ResumeGetService {
         User user = resumeReader.getUser(userId);
         Resume resume = resumeReader.getResumeByIdAndUserId(resumeId, userId);
 
-        return new ResumeResponse(
-                resume.getId(),
-                user.getStudentName(),
-                resume.getIntroduce(),
-                resume.getEmail(),
-                resume.getSkills(),
-                resume.getPortfolioUrl(),
-                resume.isPublic(),
-                user.getProfileImageUrl(),
-                user.getMajorName(),
-                resume.getSubmissionStatus(),
-                resume.getSavedAt(),
-                toResumePageResponses(resume.getPages())
-        );
-    }
-
-    private List<ResumePageResponse> toResumePageResponses(List<ResumePage> pages) {
-        if (pages == null) {
-            return List.of();
-        }
-
-        return pages.stream()
-                .map(ResumePageResponse::from)
-                .toList();
+        return ResumeResponse.of(resume, user);
     }
 }
