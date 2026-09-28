@@ -72,4 +72,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("grade") Integer grade,
             @Param("classNumber") Integer classNumber
     );
+
+    /**
+     * 여러 사용자를 전공까지 함께 가져온다.
+     *
+     * 전공은 지연 로딩이라 findAllById로 받아오면 이름을 읽을 때마다 조회가 따로 나간다.
+     * 도서관처럼 여러 명의 전공을 한꺼번에 쓰는 곳에서 쓴다.
+     */
+    @Query("""
+            select u from User u
+            left join fetch u.major
+            where u.id in :ids
+            """)
+    List<User> findAllWithMajorByIdIn(@Param("ids") Collection<Long> ids);
 }
