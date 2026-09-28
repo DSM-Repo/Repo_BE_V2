@@ -5,6 +5,7 @@ import com.example.repo_be_v2.domain.resume.domain.repository.ResumeStatusSummar
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeStudentListResponse;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeStudentStatusResponse;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
+import com.example.repo_be_v2.domain.user.domain.SchoolYear;
 import com.example.repo_be_v2.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ResumeStudentListService {
 
-    //학년도는 3월에 시작한다. 1~2월은 아직 전년도 학년도다.
-    private static final int SCHOOL_YEAR_START_MONTH = 3;
 
     private final ResumeReader resumeReader;
 
@@ -99,10 +98,8 @@ public class ResumeStudentListService {
         return latest;
     }
 
-    //3월 이전이면 아직 전년도 학년도다. (도서관의 학년도 계산과 같은 규칙)
+    //학년도 규칙은 도서관·가입과 한 곳에서 관리한다.
     private int schoolYearOf(LocalDateTime dateTime) {
-        return dateTime.getMonthValue() < SCHOOL_YEAR_START_MONTH
-                ? dateTime.getYear() - 1
-                : dateTime.getYear();
+        return SchoolYear.of(dateTime);
     }
 }

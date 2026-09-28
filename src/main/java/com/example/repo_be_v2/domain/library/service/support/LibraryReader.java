@@ -4,6 +4,7 @@ import com.example.repo_be_v2.domain.library.exception.LibraryResumeNotFoundExce
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.repository.PublicResumeSummary;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
+import com.example.repo_be_v2.domain.user.domain.SchoolYear;
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LibraryReader {
 
-    /**
-     * 기수 = 학년도 - 학년 - 이 상수.
-     * 2026학년도 2학년이 11기인 것에 맞춰 정했다.
-     */
-    private static final int COHORT_BASE_YEAR = 2013;
 
-    //학년도는 3월에 시작한다. 1~2월은 아직 전년도 학년도다.
-    private static final int SCHOOL_YEAR_START_MONTH = 3;
 
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
@@ -86,27 +80,18 @@ public class LibraryReader {
                 .collect(Collectors.toMap(User::getId, Function.identity()));
     }
 
-    //3월 이전이면 아직 전년도 학년도다.
     public int schoolYearOf(LocalDateTime dateTime) {
-        return dateTime.getMonthValue() < SCHOOL_YEAR_START_MONTH
-                ? dateTime.getYear() - 1
-                : dateTime.getYear();
+        return SchoolYear.of(dateTime);
     }
 
-    /**
-     * 기수는 재학 중에는 변하지 않는다.
-     * 진급하면 학년도와 학년이 함께 1씩 오르면서 서로 상쇄되기 때문이다.
-     * 그래서 공개 시점에 따로 저장해두지 않고 현재 학년으로 계산한다.
-     */
+    //기수는 가입할 때 정해 저장한 값이다. 졸업하면 학년으로는 되계산할 수 없어서 그대로 읽는다.
     public int cohortOf(User user) {
-        return schoolYearOf(LocalDateTime.now())
-                - user.getStudentGrade()
-                - COHORT_BASE_YEAR;
+        return user.getCohort();
     }
 
-    //공개 당시 학년도 저장하지 않는다. 학년도와 기수가 있으면 역산된다.
+    //공개 당시 학년은 저장하지 않는다. 학년도와 기수가 있으면 역산된다.
     public int gradeOf(int schoolYear, int cohort) {
-        return schoolYear - cohort - COHORT_BASE_YEAR;
+        return SchoolYear.gradeOf(schoolYear, cohort);
     }
 
     /**
@@ -124,6 +109,6 @@ public class LibraryReader {
     }
 
     private LocalDateTime schoolYearStart(int schoolYear) {
-        return LocalDateTime.of(schoolYear, SCHOOL_YEAR_START_MONTH, 1, 0, 0);
+        return SchoolYear.startOf(schoolYear);
     }
 }

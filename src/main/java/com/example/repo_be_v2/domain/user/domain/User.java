@@ -34,6 +34,13 @@ public class User {
     @Column(name = "student_number", nullable = false)
     private Integer studentNumber;
 
+    /**
+     * 입학 기수. 가입할 때 정해지고 이후 바뀌지 않는다.
+     * 학년으로 되계산하면 졸업 후에 어긋나므로 값으로 들고 있는다.
+     */
+    @Column(name = "cohort", nullable = false)
+    private int cohort;
+
     @Column(name = "student_password", nullable = false)
     private String studentPassword;
 
