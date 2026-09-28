@@ -46,8 +46,21 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    //홈 화면 프로필 사진. POST /image로 올린 S3 URL을 저장한다. 아직 안 올렸으면 null이다.
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
     //전공을 고르지 않은 사용자도 있으므로 이름은 없을 수 있다.
     public String getMajorName() {
         return major == null ? null : major.getName();
+    }
+
+    //전공은 선생님이 만들어둔 카탈로그(tbl_major)에서 고른다.
+    public void changeMajor(Major major) {
+        this.major = major;
+    }
+
+    public void changeProfileImage(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 }

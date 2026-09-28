@@ -11,6 +11,7 @@ public enum ErrorCode {
     BAD_REQUEST(400, "잘못된 요청입니다."),
     UNAUTHORIZED(401, "인증이 필요합니다."),
     FORBIDDEN(403, "권한이 없습니다."),
+    NOT_FOUND(404, "요청한 경로를 찾을 수 없습니다."),
     METHOD_NOT_ALLOWED(405, "지원하지 않는 메서드 형식입니다."),
     INTERNAL_SERVER_ERROR(500, "내부 서버 오류가 발생했습니다."),
 
@@ -35,6 +36,8 @@ public enum ErrorCode {
     RESUME_NOT_SUBMITTED(400, "제출된 이력서가 아닙니다."),
     RESUME_DELETED(410, "삭제된 이력서입니다."),
     RESUME_ACCESS_DENIED(403, "이력서를 볼 수 있는 권한이 없습니다."),
+    RESUME_PROJECT_PERIOD_INVALID(400, "프로젝트 시작일은 종료일보다 늦을 수 없습니다."),
+    RESUME_PROJECT_NAME_REQUIRED(400, "이름이 없는 프로젝트 페이지가 있습니다."),
 
     // feedback
     FEEDBACK_NOT_FOUND(404, "해당 피드백을 찾을 수 없습니다."),
@@ -50,6 +53,10 @@ public enum ErrorCode {
     MAJOR_NOT_FOUND(404, "전공을 찾을 수 없습니다."),
     MAJOR_ALREADY_EXISTS(409, "이미 존재하는 전공입니다."),
     MAJOR_IN_USE(409, "사용 중인 전공은 삭제할 수 없습니다."),
+
+    // notification
+    NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),
+    NOTIFICATION_ACCESS_DENIED(403, "본인의 알림만 처리할 수 있습니다."),
 
     // library
     LIBRARY_RESUME_NOT_FOUND(404, "공개된 이력서를 찾을 수 없습니다."),

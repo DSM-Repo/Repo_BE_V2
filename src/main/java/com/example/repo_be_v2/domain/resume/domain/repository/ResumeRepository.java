@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +25,9 @@ public interface ResumeRepository
     //목록·검색용. 본문은 필요 없어서 요약만 받는다.
     List<PublicResumeSummary> findByIsPublicTrue();
 
+    //선생님 제출 현황용. 학생 여러 명의 이력서 상태를 한 번에 가져온다.
+    List<ResumeStatusSummary> findByUserIdIn(Collection<Long> userIds);
+
     /**
      * 특정 학년도에 공개된 이력서만 조회한다.
      *
@@ -39,6 +43,18 @@ public interface ResumeRepository
             fields = "{ 'userId': 1, 'releasedAt': 1 }"
     )
     List<PublicResumeSummary> findPublicReleasedIn(
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
+    /**
+     * 특정 학년도에 공개된 이력서를 본문까지 통째로 가져온다.
+     *
+     * 레주메북은 학생 전원의 본문이 필요해서 요약 프로젝션을 쓸 수 없다.
+     * 조건은 findPublicReleasedIn과 같고, 내려받는 필드만 다르다.
+     */
+    @Query("{ 'isPublic': true, 'releasedAt': { $gte: ?0, $lt: ?1 } }")
+    List<Resume> findPublicReleasedInWithContent(
             LocalDateTime start,
             LocalDateTime end
     );

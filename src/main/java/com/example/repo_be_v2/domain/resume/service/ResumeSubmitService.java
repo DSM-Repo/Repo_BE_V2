@@ -7,6 +7,7 @@ import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.exception.ResumeAlreadySubmittedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumePageContentRequiredException;
 import com.example.repo_be_v2.domain.resume.exception.ResumePagesRequiredException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeProjectNameRequiredException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeSubmitResponse;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,17 @@ public class ResumeSubmitService {
 
         if (hasEmptyPage) {
             throw new ResumePageContentRequiredException();
+        }
+
+        //프로젝트 페이지는 이름이 있어야 도서관에서 무슨 프로젝트인지 알아볼 수 있다.
+        boolean hasUnnamedProject = resume.getPages()
+                .stream()
+                .filter(ResumePage::isProject)
+                .anyMatch(page -> page.getProject() == null
+                        || !page.getProject().hasName());
+
+        if (hasUnnamedProject) {
+            throw new ResumeProjectNameRequiredException();
         }
     }
 }

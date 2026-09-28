@@ -1,6 +1,5 @@
 package com.example.repo_be_v2.domain.resume.presentation;
 
-import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeAutoSaveRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeSaveRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeVisibilityRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.*;
@@ -30,6 +29,25 @@ public class ResumeController {
     private final ResumeSubmitService resumeSubmitService;
     private final ResumeCancelSubmitService resumeCancelSubmitService;
     private final ResumeVisibilityService resumeVisibilityService;
+    private final ResumeStudentListService resumeStudentListService;
+
+    // 학생 이력서 제출 현황 조회 (선생님 권한)
+    // "/students"는 고정 경로라 "/{resumeId}"보다 우선 매칭된다.
+    @GetMapping("/students")
+    @Operation(
+            summary = "학생 이력서 제출 현황 조회",
+            description = "선생님이 학생들의 이력서 제출 상태를 조회합니다. 학년·반을 주면 그 반만, 비우면 전교생을 학번순으로 내려줍니다. 이력서를 만들지 않은 학생도 미제출로 포함됩니다."
+    )
+    @ApiResponse(responseCode = "200", description = "제출 현황 조회 성공", useReturnTypeSchema = true)
+    public ResumeStudentListResponse getStudentResumeStatuses(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
+            @Parameter(description = "학년", example = "1")
+            @RequestParam(required = false) Integer grade,
+            @Parameter(description = "반", example = "3")
+            @RequestParam(required = false) Integer classNumber
+    ) {
+        return resumeStudentListService.execute(auth.getId(), grade, classNumber);
+    }
 
     //내 이력서 조회
     @GetMapping("/{resumeId}")
@@ -56,11 +74,11 @@ public class ResumeController {
 
     // 이력서 자동저장
     @PostMapping("/auto-save")
-    @Operation(summary = "이력서 자동 저장", description = "작성 중인 이력서 페이지 내용을 자동 저장합니다.")
+    @Operation(summary = "이력서 자동 저장", description = "작성 중인 이력서를 자동 저장합니다. 요청 형식은 저장과 같고, 이력서가 없으면 새로 만듭니다.")
     @ApiResponse(responseCode = "200", description = "자동 저장 성공", useReturnTypeSchema = true)
     public ResumeAutoSaveResponse autoSaveResume(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
-            @Valid @RequestBody ResumeAutoSaveRequest request
+            @Valid @RequestBody ResumeSaveRequest request
     ) {
         return resumeAutoSaveService.execute(auth.getId(), request);
     }

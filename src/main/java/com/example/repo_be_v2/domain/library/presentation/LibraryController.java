@@ -3,6 +3,7 @@ package com.example.repo_be_v2.domain.library.presentation;
 import com.example.repo_be_v2.domain.library.presentation.dto.response.LibraryGroupResponse;
 import com.example.repo_be_v2.domain.library.presentation.dto.response.LibraryResumeResponse;
 import com.example.repo_be_v2.domain.library.presentation.dto.response.LibrarySearchResponse;
+import com.example.repo_be_v2.domain.library.service.LibraryBookService;
 import com.example.repo_be_v2.domain.library.service.LibraryGetService;
 import com.example.repo_be_v2.domain.library.service.LibraryListService;
 import com.example.repo_be_v2.domain.library.service.LibrarySearchService;
@@ -33,6 +34,7 @@ public class LibraryController {
     private final LibraryListService libraryListService;
     private final LibrarySearchService librarySearchService;
     private final LibraryGetService libraryGetService;
+    private final LibraryBookService libraryBookService;
 
     // 공개 도서관 조회 (인증된 사용자)
     @GetMapping
@@ -62,6 +64,25 @@ public class LibraryController {
             @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size
     ) {
         return librarySearchService.execute(keyword, major, date, page, size);
+    }
+
+    // 레주메북 전체 조회 (인증된 사용자)
+    // "/book"은 고정 경로라 "/{studentId}"보다 우선 매칭된다.
+    @GetMapping("/book")
+    @Operation(
+            summary = "레주메북 전체 조회",
+            description = "한 학년도에 공개된 이력서를 본문까지 한 번에 조회합니다. 학년과 전공으로 좁힐 수 있고, 대상이 없으면 빈 배열을 돌려줍니다. 각 원소는 학생 이력서 단일 조회와 같은 형식입니다."
+    )
+    @ApiResponse(responseCode = "200", description = "레주메북 조회 성공", useReturnTypeSchema = true)
+    public List<LibraryResumeResponse> getBook(
+            @Parameter(description = "공개된 학년도", example = "2026")
+            @RequestParam Integer date,
+            @Parameter(description = "공개 당시 학년", example = "2")
+            @RequestParam(required = false) Integer grade,
+            @Parameter(description = "전공 이름", example = "백엔드")
+            @RequestParam(required = false) String major
+    ) {
+        return libraryBookService.execute(date, grade, major);
     }
 
     // 학생 이력서 단일 조회 (인증된 사용자)
