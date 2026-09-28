@@ -61,13 +61,27 @@ public class LibraryReader {
         );
     }
 
+    /**
+     * 특정 학년도에 공개된 이력서를 본문까지 가져온다.
+     *
+     * 레주메북처럼 전원의 본문이 필요한 경우에만 쓴다.
+     * 목록·검색은 본문이 필요 없어 요약 프로젝션 쪽을 쓴다.
+     */
+    public List<Resume> getPublicResumesWithContent(int schoolYear) {
+        return resumeRepository.findPublicReleasedInWithContent(
+                schoolYearStart(schoolYear),
+                schoolYearStart(schoolYear + 1)
+        );
+    }
+
     public User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(LibraryResumeNotFoundException::new);
     }
 
+    //전공 이름까지 쓰므로 지연 로딩이 풀리지 않게 함께 가져온다.
     public Map<Long, User> getUsersById(Collection<Long> userIds) {
-        return userRepository.findAllById(userIds)
+        return userRepository.findAllWithMajorByIdIn(userIds)
                 .stream()
                 .collect(Collectors.toMap(User::getId, Function.identity()));
     }
