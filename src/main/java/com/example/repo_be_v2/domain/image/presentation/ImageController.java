@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,9 +26,9 @@ public class ImageController {
 
     private final ImageUploadService imageUploadService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "이미지 업로드", description = "JPEG, PNG, WebP 이미지를 S3에 업로드합니다.")
+    @Operation(summary = "이미지 업로드", description = "JPEG, PNG, WebP 이미지를 multipart/form-data의 image 필드로 업로드합니다. 파일당 최대 50MB까지 허용합니다.")
     @ApiResponse(responseCode = "201", description = "이미지 업로드 성공", useReturnTypeSchema = true)
     public ImageResponse uploadImage(@RequestParam("image") MultipartFile file) {
         return imageUploadService.uploadImage(file);
