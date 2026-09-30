@@ -61,6 +61,9 @@ public enum ErrorCode {
     // library
     LIBRARY_RESUME_NOT_FOUND(404, "공개된 이력서를 찾을 수 없습니다."),
 
+    // history
+    HISTORY_NOT_FOUND(404, "히스토리를 찾을 수 없습니다."),
+
     // image
     IMAGE_EMPTY(400, "업로드할 이미지가 없습니다."),
     IMAGE_TYPE_NOT_SUPPORTED(400, "지원하지 않는 이미지 형식입니다."),
