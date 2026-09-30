@@ -120,14 +120,19 @@ public class ResumeController {
         return resumeCancelSubmitService.execute(auth.getId());
     }
 
-    // 이력서 공개 여부 변경
-    @PatchMapping("/visibility")
-    @Operation(summary = "이력서 공개 여부 변경", description = "제출된 이력서의 공개 여부를 변경합니다.")
+    // 학생 이력서 공개 여부 변경 (선생님 권한)
+    @PatchMapping("/students/{studentId}/visibility")
+    @Operation(
+            summary = "학생 이력서 공개 여부 변경",
+            description = "선생님이 학생의 제출된 이력서를 공개하거나 비공개로 돌립니다. 공개하면 도서관에 바로 올라갑니다. 제출 전 이력서는 공개할 수 없습니다."
+    )
     @ApiResponse(responseCode = "200", description = "공개 여부 변경 성공", useReturnTypeSchema = true)
     public ResumeVisibilityResponse changeVisibility(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
+            @Parameter(description = "공개 여부를 바꿀 학생 ID", example = "1")
+            @PathVariable Long studentId,
             @Valid @RequestBody ResumeVisibilityRequest request
     ) {
-        return resumeVisibilityService.execute(auth.getId(), request);
+        return resumeVisibilityService.execute(auth.getId(), studentId, request);
     }
 }

@@ -18,12 +18,17 @@ public class ResumeVisibilityService {
     private final ResumeRepository resumeRepository;
     private final ResumeReader resumeReader;
 
-    //이력서 공개 여부 변경
+    /**
+     * 학생 이력서 공개 여부 변경 (선생님 권한)
+     *
+     * 공개는 선생님이 확인을 마친 이력서를 도서관에 올리는 일이라 학생 본인은 할 수 없다.
+     * 도서관은 isPublic만 보고 목록을 만들므로 여기서 공개하면 바로 등록된다.
+     */
     @Transactional
-    public ResumeVisibilityResponse execute(Long userId, ResumeVisibilityRequest request) {
-        resumeReader.getUser(userId);
+    public ResumeVisibilityResponse execute(Long teacherId, Long studentId, ResumeVisibilityRequest request) {
+        resumeReader.getTeacher(teacherId);
 
-        Resume resume = resumeReader.getResumeByUserId(userId);
+        Resume resume = resumeReader.getStudentResume(studentId);
 
         resume.changeVisibility(request.isPublic(), LocalDateTime.now());
 
