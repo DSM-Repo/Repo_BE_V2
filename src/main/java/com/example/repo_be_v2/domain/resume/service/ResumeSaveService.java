@@ -61,6 +61,7 @@ public class ResumeSaveService {
                     request.email(),
                     request.skills(),
                     request.portfolioUrl(),
+                    request.profileImageUrl(),
                     pages,
                     savedAt
             );
@@ -71,6 +72,7 @@ public class ResumeSaveService {
                 request.email(),
                 request.skills(),
                 request.portfolioUrl(),
+                request.profileImageUrl(),
                 pages,
                 savedAt
         );
