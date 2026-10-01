@@ -1,0 +1,17 @@
+## MySQL 점검
+## 커넥션 수, 쿼리 처리량, InnoDB 버퍼풀, 느린 쿼리 수를 가져온다.
+## 비밀번호는 에이전트 컨테이너의 DD_MYSQL_PASSWORD 환경변수에서 읽는다.
+## 이 파일은 git에 올라가므로 값을 직접 적지 않는다.
+init_config:
+
+instances:
+  - host: mysql
+    port: 3306
+    username: datadog
+    password: "%%env_DD_MYSQL_PASSWORD%%"
+    options:
+      replication: false
+      extra_status_metrics: true
+      extra_innodb_metrics: true
+      # 스키마 용량 집계는 테이블이 많아지면 무거워진다. 필요할 때 켠다.
+      schema_size_metrics: false

@@ -1,0 +1,12 @@
+## MongoDB 점검
+## 이력서·히스토리가 들어 있는 쪽이다. 연결 수, 오퍼레이션 수, 커서, 잠금 시간을 본다.
+init_config:
+
+instances:
+  - hosts:
+      - mongo:27017
+    username: datadog
+    password: "%%env_DD_MONGO_PASSWORD%%"
+    database: admin
+    options:
+      authSource: admin

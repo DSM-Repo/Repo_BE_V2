@@ -1,0 +1,9 @@
+## Redis 점검
+## 리프레시 토큰과 이메일 인증 코드가 올라가 있다. 메모리 사용량과 만료 키 수를 본다.
+## compose의 redis에는 비밀번호가 없어 인증 설정이 없다.
+## 나중에 requirepass를 걸면 password 항목을 추가해야 한다.
+init_config:
+
+instances:
+  - host: redis
+    port: 6379
