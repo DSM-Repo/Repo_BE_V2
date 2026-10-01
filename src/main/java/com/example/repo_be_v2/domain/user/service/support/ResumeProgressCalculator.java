@@ -19,9 +19,12 @@ import java.util.Objects;
 /**
  * 이력서 완성도 계산.
  *
- * 도넛 그래프의 세 칸은 그대로 완료/미완료로 내려주고,
- * 가운데 퍼센트만 칸 안의 항목을 하나씩 세어 가중 평균한 값으로 낸다.
+ * 칸마다 안에 든 항목을 하나씩 세어 비율을 내고, 비중을 곱해 가운데 퍼센트를 만든다.
  * 한 칸을 통째로 채워야 33%가 오르던 것을 항목 단위로 쪼갠 것이다.
+ *
+ * 칸별 퍼센트도 함께 내려주므로 도넛을 부분 채움으로 그릴 수 있다.
+ * 가운데 퍼센트는 반올림 전 비율로 계산하므로, 칸별 퍼센트를 눈으로 더한 값과
+ * 1 정도 어긋날 수 있다. 반올림은 각자 마지막에 한 번씩만 한다.
  */
 @Component
 public class ResumeProgressCalculator {
@@ -40,14 +43,19 @@ public class ResumeProgressCalculator {
         Map<ProgressSection, Double> ratios = ratios(user, resume);
 
         List<ProgressSectionResponse> sections = Arrays.stream(ProgressSection.values())
-                .map(section -> new ProgressSectionResponse(
-                        section,
-                        section.getDisplayName(),
-                        ratios.get(section) >= 1.0
-                ))
+                .map(section -> toSection(section, ratios.get(section)))
                 .toList();
 
         return new ProgressResponse(totalPercent(ratios), sections);
+    }
+
+    private ProgressSectionResponse toSection(ProgressSection section, double ratio) {
+        return new ProgressSectionResponse(
+                section,
+                section.getDisplayName(),
+                percent(ratio),
+                ratio >= 1.0
+        );
     }
 
     private Map<ProgressSection, Double> ratios(User user, Resume resume) {
@@ -81,6 +89,10 @@ public class ResumeProgressCalculator {
                 .sum();
 
         return (int) Math.round(weighted / TOTAL_WEIGHT * 100);
+    }
+
+    private int percent(double ratio) {
+        return (int) Math.round(ratio * 100);
     }
 
     //머리말에 들어가는 값들을 항목으로 센다.
