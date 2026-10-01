@@ -98,7 +98,8 @@ public class ResumeProgressCalculator {
     //머리말에 들어가는 값들을 항목으로 센다.
     private double profileRatio(User user, Resume resume) {
         return ratio(List.of(
-                hasText(user.getProfileImageUrl()),
+                //홈에 실제로 걸리는 사진을 기준으로 센다. 이력서에 올렸으면 내 정보가 비어도 채운 것이다.
+                hasText(resume.profileImageUrlOr(user.getProfileImageUrl())),
                 hasText(resume.getIntroduce()),
                 hasText(resume.getEmail()),
                 !resume.getSkills().isEmpty(),

@@ -34,7 +34,7 @@ public class LibraryResumeMapper {
                 libraryReader.studentNumberOf(grade, student),
                 emailOf(resume, student),
                 student.getMajorName(),
-                student.getProfileImageUrl(),
+                resume.profileImageUrlOr(student.getProfileImageUrl()),
                 resume.getIntroduce(),
                 resume.getSkills(),
                 resume.getPortfolioUrl(),

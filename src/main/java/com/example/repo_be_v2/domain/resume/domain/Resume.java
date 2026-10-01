@@ -35,6 +35,12 @@ public class Resume {
 
     private String portfolioUrl;
 
+    /**
+     * 첫 장 머리말 사진.
+     * 제출 후엔 잠기므로 도서관에는 공개 당시 사진이 그대로 남는다.
+     */
+    private String profileImageUrl;
+
     private boolean isPublic;
 
     private ResumeSubmissionStatus submissionStatus;
@@ -55,6 +61,7 @@ public class Resume {
             String email,
             List<String> skills,
             String portfolioUrl,
+            String profileImageUrl,
             List<ResumePage> pages,
             LocalDateTime savedAt
     ) {
@@ -65,6 +72,7 @@ public class Resume {
         resume.email = email;
         resume.skills = nullToEmpty(skills);
         resume.portfolioUrl = portfolioUrl;
+        resume.profileImageUrl = profileImageUrl;
         resume.isPublic = false;
         resume.submissionStatus = ResumeSubmissionStatus.ONGOING;
         resume.pages = pages;
@@ -84,6 +92,7 @@ public class Resume {
             String email,
             List<String> skills,
             String portfolioUrl,
+            String profileImageUrl,
             List<ResumePage> pages,
             LocalDateTime savedAt
     ) {
@@ -93,6 +102,7 @@ public class Resume {
         this.email = email;
         this.skills = nullToEmpty(skills);
         this.portfolioUrl = portfolioUrl;
+        this.profileImageUrl = profileImageUrl;
         this.pages = pages;
         this.savedAt = savedAt;
     }
@@ -149,6 +159,16 @@ public class Resume {
 
     public List<String> getSkills() {
         return nullToEmpty(skills);
+    }
+
+    /**
+     * 이력서에 올린 사진을 우선 쓰고,
+     * 아직 올리지 않았으면 내 정보의 프로필 사진으로 대신한다.
+     */
+    public String profileImageUrlOr(String fallback) {
+        return profileImageUrl == null || profileImageUrl.isBlank()
+                ? fallback
+                : profileImageUrl;
     }
 
     private void assertEditable() {

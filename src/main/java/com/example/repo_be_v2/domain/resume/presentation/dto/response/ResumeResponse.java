@@ -46,7 +46,7 @@ public record ResumeResponse(
                 resume.getSkills(),
                 resume.getPortfolioUrl(),
                 resume.isPublic(),
-                owner.getProfileImageUrl(),
+                resume.profileImageUrlOr(owner.getProfileImageUrl()),
                 owner.getMajorName(),
                 resume.getSubmissionStatus(),
                 resume.getSavedAt(),

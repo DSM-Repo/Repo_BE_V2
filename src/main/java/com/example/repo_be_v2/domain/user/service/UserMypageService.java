@@ -32,7 +32,7 @@ public class UserMypageService {
 
         return new UserMypageResponse(
                 user.getStudentName(),
-                user.getProfileImageUrl(),
+                profileImageOf(resume, user),
                 resume == null ? null : resume.getIntroduce(),
                 user.getMajorName(),
                 new ClassInfoResponse(
@@ -44,5 +44,17 @@ public class UserMypageService {
                 resumeProgressCalculator.execute(user, resume),
                 notificationListService.execute(userId)
         );
+    }
+
+    /**
+     * 홈에 보여줄 프로필 사진.
+     *
+     * 이력서 첫 장에 올린 사진을 우선 쓰고,
+     * 이력서가 없거나 사진을 아직 안 올렸으면 내 정보의 사진으로 대신한다.
+     */
+    private String profileImageOf(Resume resume, User user) {
+        return resume == null
+                ? user.getProfileImageUrl()
+                : resume.profileImageUrlOr(user.getProfileImageUrl());
     }
 }
