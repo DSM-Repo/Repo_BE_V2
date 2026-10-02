@@ -74,6 +74,28 @@ public interface UserRepository extends JpaRepository<User, Long> {
     );
 
     /**
+     * 전공 관리 화면이 쓰는 전공별 학생 목록. 학년·반을 주면 그 안에서만 고른다.
+     *
+     * 전공을 고르지 않은 학생도 같은 테이블에 있어서 major_id로 거른다.
+     * 정렬과 role 조건은 findStudents와 같아 화면 순서를 그대로 쓸 수 있다.
+     */
+    @Query("""
+            select u from User u
+            join fetch u.major m
+            where u.role = :role
+              and m.id = :majorId
+              and (:grade is null or u.studentGrade = :grade)
+              and (:classNumber is null or u.studentClass = :classNumber)
+            order by u.studentGrade asc, u.studentClass asc, u.studentNumber asc
+            """)
+    List<User> findStudentsByMajorId(
+            @Param("role") Role role,
+            @Param("majorId") Long majorId,
+            @Param("grade") Integer grade,
+            @Param("classNumber") Integer classNumber
+    );
+
+    /**
      * 여러 사용자를 전공까지 함께 가져온다.
      *
      * 전공은 지연 로딩이라 findAllById로 받아오면 이름을 읽을 때마다 조회가 따로 나간다.

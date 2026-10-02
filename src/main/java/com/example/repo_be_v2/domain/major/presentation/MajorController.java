@@ -3,9 +3,11 @@ package com.example.repo_be_v2.domain.major.presentation;
 import com.example.repo_be_v2.domain.major.presentation.dto.request.MajorCreateRequest;
 import com.example.repo_be_v2.domain.major.presentation.dto.response.MajorListResponse;
 import com.example.repo_be_v2.domain.major.presentation.dto.response.MajorResponse;
+import com.example.repo_be_v2.domain.major.presentation.dto.response.MajorStudentListResponse;
 import com.example.repo_be_v2.domain.major.service.MajorCreateService;
 import com.example.repo_be_v2.domain.major.service.MajorDeleteService;
 import com.example.repo_be_v2.domain.major.service.MajorListService;
+import com.example.repo_be_v2.domain.major.service.MajorStudentListService;
 import com.example.repo_be_v2.global.config.OpenApiConfig;
 import com.example.repo_be_v2.global.security.auth.AuthDetail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,6 +39,7 @@ public class MajorController {
     private final MajorListService majorListService;
     private final MajorCreateService majorCreateService;
     private final MajorDeleteService majorDeleteService;
+    private final MajorStudentListService majorStudentListService;
 
     // 전공 목록 조회 (인증된 사용자)
     @GetMapping
@@ -55,6 +59,25 @@ public class MajorController {
             @Valid @RequestBody MajorCreateRequest request
     ) {
         return majorCreateService.execute(auth.getId(), request);
+    }
+
+    // 전공별 학생 조회 (선생님 권한)
+    @GetMapping("/{majorId}/students")
+    @Operation(
+            summary = "전공별 학생 조회",
+            description = "선생님이 전공 하나에 소속된 학생을 학번순으로 조회합니다. 학년·반으로 좁힐 수 있고, 이력서를 아직 만들지 않은 학생도 미제출로 나옵니다."
+    )
+    @ApiResponse(responseCode = "200", description = "전공별 학생 조회 성공", useReturnTypeSchema = true)
+    public MajorStudentListResponse getMajorStudents(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
+            @Parameter(description = "조회할 전공 ID", example = "1")
+            @PathVariable Long majorId,
+            @Parameter(description = "학년", example = "2")
+            @RequestParam(required = false) Integer grade,
+            @Parameter(description = "반", example = "1")
+            @RequestParam(required = false) Integer classNumber
+    ) {
+        return majorStudentListService.execute(auth.getId(), majorId, grade, classNumber);
     }
 
     // 전공 삭제 (선생님 권한)
