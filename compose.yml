@@ -91,6 +91,10 @@ services:
   mongo:
     image: mongo:8.0
     restart: unless-stopped
+    # 호스트 안에서만 연다. DB 도구는 SSH 터널로 붙는다.
+    # 127.0.0.1을 빼면 공인 IP로 그대로 열리니 주의한다.
+    ports:
+      - "127.0.0.1:${MONGO_PORT:-27017}:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-repo}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?MONGO_PASSWORD must be set in .env}
