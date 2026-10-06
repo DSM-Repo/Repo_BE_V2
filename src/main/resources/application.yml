@@ -43,8 +43,6 @@ cloud:
     s3:
       bucket: ${AWS_S3_BUCKET:dsm-students}
       prefix: ${AWS_S3_PREFIX:dsm_repo}
-    cloudfront:
-      url: ${AWS_CLOUDFRONT_URL}
 
 springdoc:
   api-docs:

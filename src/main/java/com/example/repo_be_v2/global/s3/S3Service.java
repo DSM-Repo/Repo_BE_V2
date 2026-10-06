@@ -1,6 +1,5 @@
 package com.example.repo_be_v2.global.s3;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -8,10 +7,10 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.net.URI;
 
 @Service
 @RequiredArgsConstructor
@@ -21,19 +20,6 @@ public class S3Service {
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
-
-    @Value("${cloud.aws.cloudfront.url}")
-    private String cloudFrontUrl;
-
-    @PostConstruct
-    void normalizeCloudFrontUrl() {
-        cloudFrontUrl = cloudFrontUrl.replaceAll("/+$", "");
-
-        URI uri = URI.create(cloudFrontUrl);
-        if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null) {
-            throw new IllegalStateException("cloud.aws.cloudfront.url must be a valid HTTPS URL");
-        }
-    }
 
     public String upload(MultipartFile file, String key) {
         try {
@@ -48,7 +34,9 @@ public class S3Service {
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize())
             );
 
-            return cloudFrontUrl + "/" + key;
+            return s3Client.utilities()
+                    .getUrl(GetUrlRequest.builder().bucket(bucket).key(key).build())
+                    .toExternalForm();
         } catch (IOException | SdkException e) {
             throw new S3UploadFailedException(e);
         }
