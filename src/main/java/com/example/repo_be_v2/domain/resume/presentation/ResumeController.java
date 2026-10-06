@@ -100,14 +100,20 @@ public class ResumeController {
         return resumeAutoSaveService.execute(auth.getId(), request);
     }
 
-    // 이력서 제출
+    // 이력서 제출 (저장 + 제출)
     @PostMapping("/submit")
-    @Operation(summary = "이력서 제출", description = "작성 중인 이력서를 제출 상태로 변경합니다.")
+    @Operation(
+            summary = "이력서 제출",
+            description = "본문을 저장하고 제출 상태로 만듭니다. 요청 형식은 저장과 같습니다. "
+                    + "이미 제출한 이력서도 다시 제출하면 최신 본문으로 덮어씁니다. "
+                    + "공개된 이력서는 선생님이 공개를 해제해야 다시 제출할 수 있습니다."
+    )
     @ApiResponse(responseCode = "200", description = "이력서 제출 성공", useReturnTypeSchema = true)
     public ResumeSubmitResponse submitResume(
-            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
+            @Valid @RequestBody ResumeSaveRequest request
     ) {
-        return resumeSubmitService.execute(auth.getId());
+        return resumeSubmitService.execute(auth.getId(), request);
     }
 
     // 이력서 제출 취소
