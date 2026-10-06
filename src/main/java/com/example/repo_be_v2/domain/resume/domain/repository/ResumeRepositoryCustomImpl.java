@@ -14,8 +14,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ResumeRepositoryCustomImpl implements ResumeRepositoryCustom {
 
-    //제출할 수 있는 상태. 공개(RELEASED)와 삭제(DELETED)는 빠진다.
-    private static final List<String> SUBMITTABLE_STATUSES = List.of(
+    //학생이 손댈 수 있는 상태. 공개(RELEASED)와 삭제(DELETED)는 빠진다.
+    private static final List<String> WRITABLE_STATUSES = List.of(
             ResumeSubmissionStatus.ONGOING.name(),
             ResumeSubmissionStatus.SUBMITTED.name()
     );
@@ -23,10 +23,10 @@ public class ResumeRepositoryCustomImpl implements ResumeRepositoryCustom {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Optional<Resume> replaceIfSubmittable(Resume resume) {
+    public Optional<Resume> replaceIfWritable(Resume resume) {
         Query query = Query.query(
                 Criteria.where("_id").is(resume.getId())
-                        .and("submissionStatus").in(SUBMITTABLE_STATUSES)
+                        .and("submissionStatus").in(WRITABLE_STATUSES)
         );
 
         return Optional.ofNullable(

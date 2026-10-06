@@ -44,7 +44,7 @@ public class ResumeSubmitService {
         Resume resume = resumeReader.getResumeByUserId(userId);
 
         //공개된 이력서는 본문이 어떻든 거절한다. 본문 검증이 앞서면 그쪽 400이 409를 가린다.
-        resume.validateSubmittable();
+        resume.validateWritable();
 
         List<ResumePage> pages = resumeReader.toResumePages(resume, request.pages());
 
@@ -67,7 +67,7 @@ public class ResumeSubmitService {
          * 그냥 save()로 덮어쓰면 통째로 교체되기 때문에
          * 방금 올라간 공개 상태가 상태값까지 포함해 사라진다.
          */
-        Resume savedResume = resumeRepository.replaceIfSubmittable(resume)
+        Resume savedResume = resumeRepository.replaceIfWritable(resume)
                 .orElseThrow(() -> conflictException(userId));
 
         return new ResumeSubmitResponse(
