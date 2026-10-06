@@ -34,6 +34,7 @@ public enum ErrorCode {
     RESUME_PAGE_CONTENT_REQUIRED(400, "작성되지 않은 이력서 페이지가 있습니다."),
     RESUME_NOT_EDITABLE(400, "제출된 이력서는 수정할 수 없습니다."),
     RESUME_NOT_SUBMITTED(400, "제출된 이력서가 아닙니다."),
+    RESUME_RELEASED(409, "공개된 이력서는 수정할 수 없습니다. 선생님에게 공개 해제를 요청하세요."),
     RESUME_DELETED(410, "삭제된 이력서입니다."),
     RESUME_ACCESS_DENIED(403, "이력서를 볼 수 있는 권한이 없습니다."),
     RESUME_PROJECT_PERIOD_INVALID(400, "프로젝트 시작일은 종료일보다 늦을 수 없습니다."),

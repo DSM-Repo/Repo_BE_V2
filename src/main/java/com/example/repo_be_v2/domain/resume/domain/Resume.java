@@ -2,6 +2,7 @@ package com.example.repo_be_v2.domain.resume.domain;
 
 import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotEditableException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotSubmittedException;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -115,8 +116,34 @@ public class Resume {
         }
     }
 
-    public void submit(LocalDateTime submittedAt) {
-        assertEditable();
+    /**
+     * 이력서 제출. 본문을 함께 받아 저장과 제출을 한 번에 처리한다.
+     *
+     * 이미 제출한 이력서도 다시 제출할 수 있다. 그때는 최신 본문으로 덮어쓰고
+     * 제출 상태를 그대로 유지한다. 고치려고 제출을 취소했다가 다시 내는 과정에서
+     * 중간에 실패하면 미제출로 남아버리기 때문에, 한 번의 요청으로 끝내는 편이 안전하다.
+     *
+     * 공개된 뒤에는 막는다. 선생님이 확인하고 도서관에 올린 내용이
+     * 학생 쪽에서 소리 없이 바뀌면 안 되기 때문이다. 공개 해제는 선생님만 할 수 있다.
+     */
+    public void submit(
+            String introduce,
+            String email,
+            List<String> skills,
+            String portfolioUrl,
+            String profileImageUrl,
+            List<ResumePage> pages,
+            LocalDateTime submittedAt
+    ) {
+        assertSubmittable();
+
+        this.introduce = introduce;
+        this.email = email;
+        this.skills = nullToEmpty(skills);
+        this.portfolioUrl = portfolioUrl;
+        this.profileImageUrl = profileImageUrl;
+        this.pages = pages;
+        this.savedAt = submittedAt;
 
         this.submissionStatus = ResumeSubmissionStatus.SUBMITTED;
         this.submittedAt = submittedAt;
@@ -173,6 +200,18 @@ public class Resume {
 
     private void assertEditable() {
         if (submissionStatus != ResumeSubmissionStatus.ONGOING) {
+            throw new ResumeNotEditableException();
+        }
+    }
+
+    //제출은 작성 중이거나 이미 제출한 이력서에만 할 수 있다. 공개됐거나 삭제된 것은 막는다.
+    private void assertSubmittable() {
+        if (submissionStatus == ResumeSubmissionStatus.RELEASED) {
+            throw new ResumeReleasedException();
+        }
+
+        if (submissionStatus != ResumeSubmissionStatus.ONGOING
+                && submissionStatus != ResumeSubmissionStatus.SUBMITTED) {
             throw new ResumeNotEditableException();
         }
     }
