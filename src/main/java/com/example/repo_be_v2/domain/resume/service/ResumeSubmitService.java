@@ -2,10 +2,14 @@ package com.example.repo_be_v2.domain.resume.service;
 
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;
+import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
+import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
 import com.example.repo_be_v2.domain.resume.exception.ResumePageContentRequiredException;
 import com.example.repo_be_v2.domain.resume.exception.ResumePagesRequiredException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeProjectNameRequiredException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeSaveRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeSubmitResponse;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
@@ -38,6 +42,10 @@ public class ResumeSubmitService {
         resumeReader.getUser(userId);
 
         Resume resume = resumeReader.getResumeByUserId(userId);
+
+        //공개된 이력서는 본문이 어떻든 거절한다. 본문 검증이 앞서면 그쪽 400이 409를 가린다.
+        resume.validateSubmittable();
+
         List<ResumePage> pages = resumeReader.toResumePages(resume, request.pages());
 
         validateRequiredFields(pages);
@@ -52,12 +60,41 @@ public class ResumeSubmitService {
                 LocalDateTime.now()
         );
 
-        Resume savedResume = resumeRepository.save(resume);
+        /*
+         * 위에서 확인한 상태가 쓰기 직전까지 유지됐을 때만 저장한다.
+         *
+         * 읽고 쓰는 사이에 선생님이 이력서를 공개해버릴 수 있다.
+         * 그냥 save()로 덮어쓰면 통째로 교체되기 때문에
+         * 방금 올라간 공개 상태가 상태값까지 포함해 사라진다.
+         */
+        Resume savedResume = resumeRepository.replaceIfSubmittable(resume)
+                .orElseThrow(() -> conflictException(userId));
 
         return new ResumeSubmitResponse(
                 savedResume.getId(),
                 savedResume.getSubmissionStatus()
         );
+    }
+
+    /**
+     * 조건부 저장이 밀렸을 때 왜 밀렸는지 알아낸다.
+     *
+     * 저장 직전에 상태가 바뀐 경우라 지금 저장된 값을 다시 읽어 사유를 정한다.
+     */
+    private RuntimeException conflictException(Long userId) {
+        ResumeSubmissionStatus status = resumeRepository.findByUserId(userId)
+                .map(Resume::getSubmissionStatus)
+                .orElse(null);
+
+        if (status == null) {
+            return new ResumeNotFoundException();
+        }
+
+        if (status == ResumeSubmissionStatus.DELETED) {
+            return new ResumeDeletedException();
+        }
+
+        return new ResumeReleasedException();
     }
 
     /**

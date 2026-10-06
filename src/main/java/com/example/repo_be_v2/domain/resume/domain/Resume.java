@@ -135,7 +135,7 @@ public class Resume {
             List<ResumePage> pages,
             LocalDateTime submittedAt
     ) {
-        assertSubmittable();
+        validateSubmittable();
 
         this.introduce = introduce;
         this.email = email;
@@ -204,8 +204,14 @@ public class Resume {
         }
     }
 
-    //제출은 작성 중이거나 이미 제출한 이력서에만 할 수 있다. 공개됐거나 삭제된 것은 막는다.
-    private void assertSubmittable() {
+    /**
+     * 제출할 수 있는 상태인지 확인한다.
+     *
+     * 본문을 검증하기 전에 먼저 부를 수 있도록 공개해 둔다.
+     * 공개된 이력서라면 본문이 어떻든 거절해야 하는데,
+     * 본문 검증이 앞서면 그쪽 400이 먼저 나가 공개 거절(409)이 가려진다.
+     */
+    public void validateSubmittable() {
         if (submissionStatus == ResumeSubmissionStatus.RELEASED) {
             throw new ResumeReleasedException();
         }

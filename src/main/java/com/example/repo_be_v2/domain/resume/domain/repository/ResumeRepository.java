@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ResumeRepository
-        extends MongoRepository<Resume, String> {
+        extends MongoRepository<Resume, String>, ResumeRepositoryCustom {
 
     Optional<Resume> findByUserId(Long userId);
 
