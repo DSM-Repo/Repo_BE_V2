@@ -97,7 +97,7 @@ public class Resume {
             List<ResumePage> pages,
             LocalDateTime savedAt
     ) {
-        assertEditable();
+        validateWritable();
 
         this.introduce = introduce;
         this.email = email;
@@ -135,7 +135,7 @@ public class Resume {
             List<ResumePage> pages,
             LocalDateTime submittedAt
     ) {
-        validateSubmittable();
+        validateWritable();
 
         this.introduce = introduce;
         this.email = email;
@@ -198,20 +198,19 @@ public class Resume {
                 : profileImageUrl;
     }
 
-    private void assertEditable() {
-        if (submissionStatus != ResumeSubmissionStatus.ONGOING) {
-            throw new ResumeNotEditableException();
-        }
-    }
-
     /**
-     * 제출할 수 있는 상태인지 확인한다.
+     * 학생이 손댈 수 있는 상태인지 확인한다. 저장과 제출이 같은 규칙을 쓴다.
+     *
+     * 제출한 뒤에도 고치고 다시 낼 수 있어야 하므로 제출 상태까지 허용한다.
+     * 제출을 취소했다가 저장하고 다시 내는 왕복을 없애려는 것이다.
+     *
+     * 공개된 이력서는 막는다. 선생님이 확인하고 도서관에 올린 내용이
+     * 학생 쪽에서 소리 없이 바뀌면 안 된다. 공개 해제는 선생님만 할 수 있다.
      *
      * 본문을 검증하기 전에 먼저 부를 수 있도록 공개해 둔다.
-     * 공개된 이력서라면 본문이 어떻든 거절해야 하는데,
      * 본문 검증이 앞서면 그쪽 400이 먼저 나가 공개 거절(409)이 가려진다.
      */
-    public void validateSubmittable() {
+    public void validateWritable() {
         if (submissionStatus == ResumeSubmissionStatus.RELEASED) {
             throw new ResumeReleasedException();
         }
