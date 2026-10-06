@@ -64,10 +64,9 @@ public class ResumeSubmitService {
          * 위에서 확인한 상태가 쓰기 직전까지 유지됐을 때만 저장한다.
          *
          * 읽고 쓰는 사이에 선생님이 이력서를 공개해버릴 수 있다.
-         * 그냥 save()로 덮어쓰면 통째로 교체되기 때문에
-         * 방금 올라간 공개 상태가 상태값까지 포함해 사라진다.
+         * 저장된 상태가 아직 손댈 수 있을 때만 본문과 제출 상태를 갱신한다.
          */
-        Resume savedResume = resumeRepository.replaceIfWritable(resume)
+        Resume savedResume = resumeRepository.submitIfWritable(resume)
                 .orElseThrow(() -> conflictException(userId));
 
         return new ResumeSubmitResponse(

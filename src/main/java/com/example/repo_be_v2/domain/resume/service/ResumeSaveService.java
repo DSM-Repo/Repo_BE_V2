@@ -61,11 +61,11 @@ public class ResumeSaveService {
 
         /*
          * 읽고 쓰는 사이에 선생님이 이력서를 공개해버릴 수 있다.
-         * save()로 덮어쓰면 문서가 통째로 교체되어 방금 올라간 공개가 사라지므로,
-         * 저장된 상태가 아직 손댈 수 있을 때만 교체한다.
+         * 저장된 상태가 아직 손댈 수 있을 때만 본문 필드를 갱신한다.
+         * 제출 상태는 건드리지 않아, 겹쳐 들어온 제출을 되돌리지 않는다.
          */
         return toResponse(
-                resumeRepository.replaceIfWritable(existingResume)
+                resumeRepository.updateContentIfWritable(existingResume)
                         .orElseThrow(() -> conflictException(userId))
         );
     }
