@@ -51,6 +51,7 @@ public class MajorStudentListService {
         return new MajorStudentListResponse(
                 major.getId(),
                 major.getName(),
+                major.getCreatedAt(),
                 grade,
                 classNumber,
                 items,
