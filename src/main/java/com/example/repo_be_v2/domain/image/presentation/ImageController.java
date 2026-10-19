@@ -28,7 +28,8 @@ public class ImageController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "이미지 업로드", description = "JPEG, PNG, WebP 이미지를 multipart/form-data의 image 필드로 업로드합니다. 파일당 최대 50MB까지 허용합니다.")
+    @Operation(summary = "이미지 업로드", description = "JPEG, PNG, WebP 이미지를 multipart/form-data의 image 필드로 업로드합니다. 파일당 최대 50MB까지 허용합니다. "
+            + "응답의 imageUrl은 일정 시간만 열리는 서명 URL입니다. 이력서·내 정보 저장 요청에는 이 값을 그대로 담으면 됩니다.")
     @ApiResponse(responseCode = "201", description = "이미지 업로드 성공", useReturnTypeSchema = true)
     public ImageResponse uploadImage(@RequestParam("image") MultipartFile file) {
         return imageUploadService.uploadImage(file);

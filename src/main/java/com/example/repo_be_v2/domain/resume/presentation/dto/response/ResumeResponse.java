@@ -8,6 +8,7 @@ import com.example.repo_be_v2.domain.user.domain.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 /**
  * 내 이력서 조회 응답.
@@ -15,6 +16,9 @@ import java.util.List;
  * 저장 요청에 담은 값을 그대로 돌려주고,
  * 서버가 가진 값(이름, 전공, 프로필 사진, 상태)만 더한다.
  * 프런트는 받은 그대로 고쳐서 다시 저장 요청으로 보내면 된다.
+ *
+ * 이미지 URL만은 저장된 값이 아니라 유효시간이 있는 서명 URL로 바꿔 내려준다.
+ * 이것도 그대로 돌려보내면 저장할 때 서명을 떼어낸다.
  */
 public record ResumeResponse(
         String id,
@@ -36,8 +40,9 @@ public record ResumeResponse(
      *
      * 본인 조회와 선생님 조회가 같은 형식을 내려줘야 해서 변환을 여기 모아둔다.
      * owner는 이력서를 쓴 학생이다. 선생님이 조회할 때도 학생의 이름·전공이 들어간다.
+     * toViewUrl은 저장된 이미지 URL을 열어볼 수 있는 URL로 바꾼다.
      */
-    public static ResumeResponse of(Resume resume, User owner) {
+    public static ResumeResponse of(Resume resume, User owner, UnaryOperator<String> toViewUrl) {
         return new ResumeResponse(
                 resume.getId(),
                 owner.getStudentName(),
@@ -46,21 +51,24 @@ public record ResumeResponse(
                 resume.getSkills(),
                 resume.getPortfolioUrl(),
                 resume.isPublic(),
-                resume.profileImageUrlOr(owner.getProfileImageUrl()),
+                toViewUrl.apply(resume.profileImageUrlOr(owner.getProfileImageUrl())),
                 owner.getMajorName(),
                 resume.getSubmissionStatus(),
                 resume.getSavedAt(),
-                toPageResponses(resume.getPages())
+                toPageResponses(resume.getPages(), toViewUrl)
         );
     }
 
-    private static List<ResumePageResponse> toPageResponses(List<ResumePage> pages) {
+    private static List<ResumePageResponse> toPageResponses(
+            List<ResumePage> pages,
+            UnaryOperator<String> toViewUrl
+    ) {
         if (pages == null) {
             return List.of();
         }
 
         return pages.stream()
-                .map(ResumePageResponse::from)
+                .map(page -> ResumePageResponse.from(page, toViewUrl))
                 .toList();
     }
 }

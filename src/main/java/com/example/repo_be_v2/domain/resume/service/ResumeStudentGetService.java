@@ -4,6 +4,7 @@ import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeResponse;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import com.example.repo_be_v2.domain.user.domain.User;
+import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ResumeStudentGetService {
 
     private final ResumeReader resumeReader;
+    private final S3Service s3Service;
 
     /**
      * 학생 이력서 조회 (선생님 권한)
@@ -29,6 +31,6 @@ public class ResumeStudentGetService {
         User student = resumeReader.getUser(studentId);
         Resume resume = resumeReader.getStudentResume(studentId);
 
-        return ResumeResponse.of(resume, student);
+        return ResumeResponse.of(resume, student, s3Service::toViewUrl);
     }
 }

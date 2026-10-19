@@ -7,6 +7,7 @@ import com.example.repo_be_v2.domain.user.service.support.UserReader;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.notification.service.NotificationListService;
 import com.example.repo_be_v2.domain.user.domain.User;
+import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ public class UserMypageService {
     private final UserReader userReader;
     private final ResumeProgressCalculator resumeProgressCalculator;
     private final NotificationListService notificationListService;
+    private final S3Service s3Service;
 
     /**
      * 마이페이지(홈) 조회
@@ -32,7 +34,7 @@ public class UserMypageService {
 
         return new UserMypageResponse(
                 user.getStudentName(),
-                profileImageOf(resume, user),
+                s3Service.toViewUrl(profileImageOf(resume, user)),
                 resume == null ? null : resume.getIntroduce(),
                 user.getMajorName(),
                 new ClassInfoResponse(
