@@ -43,6 +43,8 @@ cloud:
     s3:
       bucket: ${AWS_S3_BUCKET:dsm-students}
       prefix: ${AWS_S3_PREFIX:dsm_repo}
+      # 응답에 담는 이미지 서명 URL의 유효시간. 버킷이 비공개라 이 시간이 지나면 다시 조회해야 열린다.
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:1h}
 
 springdoc:
   api-docs:

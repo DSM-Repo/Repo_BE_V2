@@ -3,6 +3,7 @@ package com.example.repo_be_v2.domain.user.service;
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserUpdateRequest;
 import com.example.repo_be_v2.domain.user.service.support.UserReader;
+import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserUpdateService {
 
     private final UserReader userReader;
+    private final S3Service s3Service;
 
     /**
      * 내 정보 수정 (홈 화면 프로필 영역)
@@ -28,7 +30,7 @@ public class UserUpdateService {
         }
 
         if (request.profileImageUrl() != null) {
-            user.changeProfileImage(request.profileImageUrl());
+            user.changeProfileImage(s3Service.toStoredUrl(request.profileImageUrl()));
         }
     }
 }

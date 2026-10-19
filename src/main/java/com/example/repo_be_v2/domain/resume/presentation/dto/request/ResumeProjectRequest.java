@@ -16,7 +16,8 @@ public record ResumeProjectRequest(
         @Size(max = 100, message = "프로젝트 이름은 100자 이하여야 합니다.")
         String name,
 
-        @Size(max = 500, message = "프로젝트 이미지 URL은 500자 이하여야 합니다.")
+        //업로드·조회로 받은 서명 URL을 그대로 보내도 통과해야 한다. 임시 자격 증명을 쓰면 1KB를 넘기도 한다.
+        @Size(max = 2048, message = "프로젝트 이미지 URL은 2048자 이하여야 합니다.")
         @Pattern(regexp = "^https?://.+", message = "유효하지 않은 이미지 URL입니다.")
         String imageUrl,
 

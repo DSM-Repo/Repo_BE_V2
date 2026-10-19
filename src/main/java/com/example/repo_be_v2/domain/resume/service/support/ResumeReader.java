@@ -16,6 +16,7 @@ import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
 import com.example.repo_be_v2.domain.user.exception.TeacherPermissionRequiredException;
 import com.example.repo_be_v2.domain.user.exception.UserNotFoundException;
+import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,7 @@ public class ResumeReader {
 
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
+    private final S3Service s3Service;
 
     //MySQL에 실제 사용자가 존재하는지 확인
     public User getUser(Long userId) {
@@ -143,7 +145,7 @@ public class ResumeReader {
 
         return ResumeProject.of(
                 project.name(),
-                project.imageUrl(),
+                s3Service.toStoredUrl(project.imageUrl()),
                 project.summary(),
                 project.startDate(),
                 project.endDate()

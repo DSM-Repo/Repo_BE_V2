@@ -13,6 +13,7 @@ import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeSaveRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeSubmitResponse;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
+import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class ResumeSubmitService {
 
     private final ResumeRepository resumeRepository;
     private final ResumeReader resumeReader;
+    private final S3Service s3Service;
 
     /**
      * 이력서 제출
@@ -55,7 +57,7 @@ public class ResumeSubmitService {
                 request.email(),
                 request.skills(),
                 request.portfolioUrl(),
-                request.profileImageUrl(),
+                s3Service.toStoredUrl(request.profileImageUrl()),
                 pages,
                 LocalDateTime.now()
         );

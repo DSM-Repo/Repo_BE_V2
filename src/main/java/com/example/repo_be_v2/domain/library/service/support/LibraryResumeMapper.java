@@ -5,6 +5,7 @@ import com.example.repo_be_v2.domain.library.presentation.dto.response.LibraryRe
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.user.domain.User;
+import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import java.util.List;
 public class LibraryResumeMapper {
 
     private final LibraryReader libraryReader;
+    private final S3Service s3Service;
 
     public LibraryResumeResponse toResponse(Resume resume, User student) {
         int cohort = libraryReader.cohortOf(student);
@@ -34,7 +36,7 @@ public class LibraryResumeMapper {
                 libraryReader.studentNumberOf(grade, student),
                 emailOf(resume, student),
                 student.getMajorName(),
-                resume.profileImageUrlOr(student.getProfileImageUrl()),
+                s3Service.toViewUrl(resume.profileImageUrlOr(student.getProfileImageUrl())),
                 resume.getIntroduce(),
                 resume.getSkills(),
                 resume.getPortfolioUrl(),
@@ -78,7 +80,7 @@ public class LibraryResumeMapper {
         }
 
         return pages.stream()
-                .map(LibraryResumePageResponse::from)
+                .map(page -> LibraryResumePageResponse.from(page, s3Service::toViewUrl))
                 .toList();
     }
 }

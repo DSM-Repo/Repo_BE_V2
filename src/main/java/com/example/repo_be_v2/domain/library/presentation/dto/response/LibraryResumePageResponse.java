@@ -4,6 +4,8 @@ import com.example.repo_be_v2.domain.resume.domain.ResumePage;
 import com.example.repo_be_v2.domain.resume.domain.enums.ResumePageType;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeProjectResponse;
 
+import java.util.function.UnaryOperator;
+
 public record LibraryResumePageResponse(
         String id,
         int index,
@@ -12,12 +14,12 @@ public record LibraryResumePageResponse(
         String content
 ) {
 
-    public static LibraryResumePageResponse from(ResumePage page) {
+    public static LibraryResumePageResponse from(ResumePage page, UnaryOperator<String> toViewUrl) {
         return new LibraryResumePageResponse(
                 page.getId(),
                 page.getIndex(),
                 page.getType(),
-                ResumeProjectResponse.from(page.getProject()),
+                ResumeProjectResponse.from(page.getProject(), toViewUrl),
                 page.getContent()
         );
     }

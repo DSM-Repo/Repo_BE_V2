@@ -4,6 +4,7 @@ import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeResponse;
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
+import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ResumeGetService {
 
     private final ResumeReader resumeReader;
+    private final S3Service s3Service;
 
     /**
      * 내 이력서 조회
@@ -25,6 +27,6 @@ public class ResumeGetService {
         User user = resumeReader.getUser(userId);
         Resume resume = resumeReader.getResumeByIdAndUserId(resumeId, userId);
 
-        return ResumeResponse.of(resume, user);
+        return ResumeResponse.of(resume, user, s3Service::toViewUrl);
     }
 }
