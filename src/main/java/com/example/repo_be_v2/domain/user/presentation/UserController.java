@@ -91,12 +91,12 @@ public class UserController {
         userEmailVerifyService.execute(request);
     }
 
-    // 내 정보 조회 (인증된 사용자) — 홈 화면용, 이력서 작성 진행률 포함
+    // 내 정보 조회 (인증된 사용자) — 홈 화면 프로필 영역
     @GetMapping
     @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
     @Operation(
             summary = "내 정보 조회",
-            description = "로그인한 사용자의 정보, 한줄소개, 이력서 작성 진행률을 한 번에 조회합니다. 이력서가 없으면 진행률은 0%입니다."
+            description = "로그인한 사용자의 이름, 프로필 사진, 한줄소개, 전공, 학번을 조회합니다. 이력서가 없으면 한줄소개는 null입니다."
     )
     @ApiResponse(responseCode = "200", description = "내 정보 조회 성공", useReturnTypeSchema = true)
     public UserMypageResponse getMypage(
