@@ -25,7 +25,10 @@ public record ResumeSaveRequest(
         @Size(max = 100, message = "이메일은 100자 이하여야 합니다.")
         String email,
 
-        List<@Size(max = 30, message = "기술스택은 30자 이하여야 합니다.") String> skills,
+        List<
+                @NotNull(message = "비어 있는 기술스택이 있습니다.")
+                @Size(max = 30, message = "기술스택은 30자 이하여야 합니다.")
+                String> skills,
 
         String portfolioUrl,
 
@@ -34,7 +37,8 @@ public record ResumeSaveRequest(
         @Pattern(regexp = "^https?://.+", message = "유효하지 않은 이미지 URL입니다.")
         String profileImageUrl,
 
-        @NotNull @Valid List<ResumePageRequest> pages
+        //리스트 안의 null은 @Valid가 건너뛰어 변환 중에 NPE가 난다. 원소에도 따로 건다.
+        @NotNull @Valid List<@NotNull(message = "비어 있는 페이지가 있습니다.") ResumePageRequest> pages
 
 ) {
 }
