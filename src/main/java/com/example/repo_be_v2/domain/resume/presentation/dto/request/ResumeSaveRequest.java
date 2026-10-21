@@ -1,6 +1,7 @@
 package com.example.repo_be_v2.domain.resume.presentation.dto.request;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -21,18 +22,11 @@ public record ResumeSaveRequest(
         @Size(max = 1000, message = "자기소개는 1000자 이하여야 합니다.")
         String introduce,
 
-        /*
-         * @Email만으로는 "a@b"처럼 도메인에 점이 없는 주소도 통과한다. 연락용이라 실제로 보낼 수 있는 모양만 받는다.
-         * - 아이디: 점으로 시작·끝나거나 점이 연달아 올 수 없다.
-         * - 도메인: 점으로 나뉜 각 칸이 하이픈으로 시작하거나 끝날 수 없다. (a@-dsm.hs.kr, a@dsm-.hs.kr)
-         * - 마지막 칸은 영문 2자 이상이다.
-         * @Email과 같이 걸면 한 값에 오류가 두 번 실리므로 이 패턴 하나로만 본다.
-         * 프런트는 비워 둘 때 빈 문자열을 보내므로 빈 값은 통과시킨다.
-         */
+        //@Email만으로는 "a@b"처럼 도메인에 점이 없는 주소도 통과한다. 연락용이라 실제로 보낼 수 있는 모양만 받는다.
+        //프런트는 비워 둘 때 빈 문자열을 보내므로 빈 값은 통과시킨다.
+        @Email(message = "유효하지 않은 이메일 형식입니다.")
         @Pattern(
-                regexp = "^$|^[A-Za-z0-9_%+-]+(\\.[A-Za-z0-9_%+-]+)*"
-                        + "@[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*"
-                        + "\\.[A-Za-z]{2,}$",
+                regexp = "^$|^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$",
                 message = "유효하지 않은 이메일 형식입니다."
         )
         @Size(max = 100, message = "이메일은 100자 이하여야 합니다.")
