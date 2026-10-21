@@ -37,6 +37,29 @@ public class ResumeRepositoryCustomImpl implements ResumeRepositoryCustom {
         return findAndModify(resume.getId(), update);
     }
 
+    @Override
+    public Optional<Resume> updateStatusIfUnchanged(Resume resume, ResumeSubmissionStatus expectedStatus) {
+        Query query = Query.query(
+                Criteria.where("_id").is(resume.getId())
+                        .and("submissionStatus").is(expectedStatus.name())
+        );
+
+        Update update = new Update()
+                .set("submissionStatus", resume.getSubmissionStatus())
+                .set("isPublic", resume.isPublic())
+                .set("submittedAt", resume.getSubmittedAt())
+                .set("releasedAt", resume.getReleasedAt());
+
+        return Optional.ofNullable(
+                mongoTemplate.findAndModify(
+                        query,
+                        update,
+                        FindAndModifyOptions.options().returnNew(true),
+                        Resume.class
+                )
+        );
+    }
+
     /**
      * 저장과 제출이 함께 덮어쓰는 본문 필드.
      *

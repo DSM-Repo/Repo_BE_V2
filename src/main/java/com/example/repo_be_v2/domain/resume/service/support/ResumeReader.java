@@ -9,6 +9,8 @@ import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeStatusSummary;
 import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeNotSubmittedException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumePageRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeProjectRequest;
 import com.example.repo_be_v2.domain.user.domain.User;
@@ -111,6 +113,32 @@ public class ResumeReader {
     public Resume getResumeByUserId(Long userId) {
         return resumeRepository.findByUserId(userId)
                 .orElseThrow(ResumeNotFoundException::new);
+    }
+
+    /**
+     * 상태만 바꾸는 조건부 쓰기가 밀렸을 때 왜 밀렸는지 알아낸다.
+     *
+     * 읽고 쓰는 사이에 상태가 바뀐 경우라 지금 저장된 값을 다시 읽어 사유를 정한다.
+     * 공개됐거나 삭제됐으면 그대로 알리고, 나머지는 제출 상태가 아니게 된 것이다.
+     */
+    public RuntimeException statusChangedException(Long userId) {
+        ResumeSubmissionStatus status = resumeRepository.findByUserId(userId)
+                .map(Resume::getSubmissionStatus)
+                .orElse(null);
+
+        if (status == null) {
+            return new ResumeNotFoundException();
+        }
+
+        if (status == ResumeSubmissionStatus.DELETED) {
+            return new ResumeDeletedException();
+        }
+
+        if (status == ResumeSubmissionStatus.RELEASED) {
+            return new ResumeReleasedException();
+        }
+
+        return new ResumeNotSubmittedException();
     }
 
     /**

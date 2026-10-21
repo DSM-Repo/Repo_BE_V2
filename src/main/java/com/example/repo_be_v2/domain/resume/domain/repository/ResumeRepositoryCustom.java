@@ -1,6 +1,7 @@
 package com.example.repo_be_v2.domain.resume.domain.repository;
 
 import com.example.repo_be_v2.domain.resume.domain.Resume;
+import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
 
 import java.util.Optional;
 
@@ -21,4 +22,12 @@ public interface ResumeRepositoryCustom {
 
     //본문과 함께 제출 상태·제출 시각까지 갱신한다.
     Optional<Resume> submitIfWritable(Resume resume);
+
+    /**
+     * 제출·공개 상태만 갱신한다. 본문은 건드리지 않는다.
+     *
+     * 읽은 뒤 저장된 상태가 expectedStatus에서 바뀌었으면 비어 있는 값을 돌려준다.
+     * 공개 여부 변경과 제출 취소가 쓴다.
+     */
+    Optional<Resume> updateStatusIfUnchanged(Resume resume, ResumeSubmissionStatus expectedStatus);
 }
