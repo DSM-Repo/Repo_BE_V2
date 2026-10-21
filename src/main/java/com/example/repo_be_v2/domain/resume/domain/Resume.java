@@ -1,6 +1,7 @@
 package com.example.repo_be_v2.domain.resume.domain;
 
 import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
+import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotEditableException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotSubmittedException;
@@ -149,7 +150,21 @@ public class Resume {
         this.submittedAt = submittedAt;
     }
 
+    /**
+     * 제출 취소.
+     *
+     * 공개된 이력서는 저장할 때와 같은 이유로 막는다. 선생님에게 공개 해제를 요청해야 한다.
+     * 삭제된 이력서는 다른 조회처럼 삭제됐다고 알린다.
+     */
     public void cancelSubmit() {
+        if (submissionStatus == ResumeSubmissionStatus.RELEASED) {
+            throw new ResumeReleasedException();
+        }
+
+        if (submissionStatus == ResumeSubmissionStatus.DELETED) {
+            throw new ResumeDeletedException();
+        }
+
         if (submissionStatus != ResumeSubmissionStatus.SUBMITTED) {
             throw new ResumeNotSubmittedException();
         }
@@ -213,6 +228,10 @@ public class Resume {
     public void validateWritable() {
         if (submissionStatus == ResumeSubmissionStatus.RELEASED) {
             throw new ResumeReleasedException();
+        }
+
+        if (submissionStatus == ResumeSubmissionStatus.DELETED) {
+            throw new ResumeDeletedException();
         }
 
         if (submissionStatus != ResumeSubmissionStatus.ONGOING

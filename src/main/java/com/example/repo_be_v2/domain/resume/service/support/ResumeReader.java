@@ -9,6 +9,11 @@ import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeStatusSummary;
 import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeNotSubmittedException;
+import com.example.repo_be_v2.domain.resume.exception.ResumePageIdDuplicatedException;
+import com.example.repo_be_v2.domain.resume.exception.ResumePageIndexDuplicatedException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeProjectDateInvalidException;
+import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumePageRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeProjectRequest;
 import com.example.repo_be_v2.domain.user.domain.User;
@@ -20,10 +25,14 @@ import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -114,6 +123,32 @@ public class ResumeReader {
     }
 
     /**
+     * 상태만 바꾸는 조건부 쓰기가 밀렸을 때 왜 밀렸는지 알아낸다.
+     *
+     * 읽고 쓰는 사이에 상태가 바뀐 경우라 지금 저장된 값을 다시 읽어 사유를 정한다.
+     * 공개됐거나 삭제됐으면 그대로 알리고, 나머지는 제출 상태가 아니게 된 것이다.
+     */
+    public RuntimeException statusChangedException(Long userId) {
+        ResumeSubmissionStatus status = resumeRepository.findByUserId(userId)
+                .map(Resume::getSubmissionStatus)
+                .orElse(null);
+
+        if (status == null) {
+            return new ResumeNotFoundException();
+        }
+
+        if (status == ResumeSubmissionStatus.DELETED) {
+            return new ResumeDeletedException();
+        }
+
+        if (status == ResumeSubmissionStatus.RELEASED) {
+            return new ResumeReleasedException();
+        }
+
+        return new ResumeNotSubmittedException();
+    }
+
+    /**
      * 요청 DTO의 페이지 목록을 도메인 객체로 변환한다.
      *
      * 페이지 id는 피드백이 물고 있는 값이라 저장할 때마다 새로 만들면 안 된다.
@@ -122,6 +157,8 @@ public class ResumeReader {
      * 둘 다 없을 때(새 페이지, id 없이 저장된 옛 데이터)만 새로 발급한다.
      */
     public List<ResumePage> toResumePages(Resume resume, List<ResumePageRequest> pageRequests) {
+        validateNoDuplicatePages(pageRequests);
+
         List<ResumePage> previousPages = resume == null ? List.of() : resume.getPages();
 
         return pageRequests.stream()
@@ -133,6 +170,30 @@ public class ResumeReader {
                         page.content()
                 ))
                 .toList();
+    }
+
+    /**
+     * 같은 위치나 같은 id의 페이지가 두 장이면 막는다.
+     *
+     * 위치가 겹치면 기존 페이지 id를 어느 쪽이 물려받을지 정할 수 없고,
+     * id가 겹치면 그 id에 달린 피드백이 어느 페이지 것인지 알 수 없게 된다.
+     * 비워 보낸 id는 서버가 채우므로 중복으로 보지 않는다.
+     */
+    private void validateNoDuplicatePages(List<ResumePageRequest> pageRequests) {
+        Set<Integer> indexes = new HashSet<>();
+        Set<String> ids = new HashSet<>();
+
+        for (ResumePageRequest page : pageRequests) {
+            if (!indexes.add(page.index())) {
+                throw new ResumePageIndexDuplicatedException();
+            }
+
+            boolean hasId = page.id() != null && !page.id().isBlank();
+
+            if (hasId && !ids.add(page.id())) {
+                throw new ResumePageIdDuplicatedException();
+            }
+        }
     }
 
     //머리말은 프로젝트 페이지에만 있다. 다른 종류로 실려오면 버린다.
@@ -147,9 +208,27 @@ public class ResumeReader {
                 project.name(),
                 s3Service.toStoredUrl(project.imageUrl()),
                 project.summary(),
-                project.startDate(),
-                project.endDate()
+                toDate(project.startDate()),
+                toDate(project.endDate())
         );
+    }
+
+    /**
+     * 프로젝트 날짜를 바꾼다. 비어 있으면 날짜가 없는 것이다.
+     *
+     * 형식(yyyy-MM-dd)은 요청 검증이 이미 봤다.
+     * 2026-02-30처럼 형식은 맞지만 없는 날짜는 여기서 걸린다.
+     */
+    private LocalDate toDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return LocalDate.parse(value);
+        } catch (DateTimeParseException e) {
+            throw new ResumeProjectDateInvalidException();
+        }
     }
 
     private String resolvePageId(List<ResumePage> previousPages, ResumePageRequest request) {
