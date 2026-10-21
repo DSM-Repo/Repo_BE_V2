@@ -6,12 +6,14 @@ import com.example.repo_be_v2.domain.user.presentation.dto.request.UserLoginRequ
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserUpdateRequest;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.AccessTokenResponse;
+import com.example.repo_be_v2.domain.user.presentation.dto.response.ProgressResponse;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.TokenResponse;
 import com.example.repo_be_v2.domain.user.presentation.dto.response.UserMypageResponse;
 import com.example.repo_be_v2.domain.user.service.UserEmailSendService;
 import com.example.repo_be_v2.domain.user.service.UserEmailVerifyService;
 import com.example.repo_be_v2.domain.user.service.UserLoginService;
 import com.example.repo_be_v2.domain.user.service.UserMypageService;
+import com.example.repo_be_v2.domain.user.service.UserProgressService;
 import com.example.repo_be_v2.domain.user.service.UserSignUpService;
 import com.example.repo_be_v2.domain.user.service.UserTokenRefreshService;
 import com.example.repo_be_v2.domain.user.service.UserUpdateService;
@@ -46,6 +48,7 @@ public class UserController {
     private final UserEmailVerifyService userEmailVerifyService;
     private final UserTokenRefreshService userTokenRefreshService;
     private final UserMypageService userMypageService;
+    private final UserProgressService userProgressService;
     private final UserUpdateService userUpdateService;
 
     @PostMapping("/signup")
@@ -100,6 +103,20 @@ public class UserController {
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth
     ) {
         return userMypageService.execute(auth.getId());
+    }
+
+    // 이력서 완료율 조회 (인증된 사용자) — 홈 화면 도넛
+    @GetMapping("/progress")
+    @SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
+    @Operation(
+            summary = "이력서 완료율 조회",
+            description = "이력서 전체 완료율과 칸(내 정보·활동·프로젝트)별 퍼센트를 조회합니다. 이력서가 없으면 모두 0%입니다."
+    )
+    @ApiResponse(responseCode = "200", description = "이력서 완료율 조회 성공", useReturnTypeSchema = true)
+    public ProgressResponse getProgress(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth
+    ) {
+        return userProgressService.execute(auth.getId());
     }
 
     // 내 정보 수정 (인증된 사용자) — 전공 선택, 프로필 이미지
