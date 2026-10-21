@@ -10,6 +10,8 @@ import com.example.repo_be_v2.domain.resume.domain.repository.ResumeStatusSummar
 import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotSubmittedException;
+import com.example.repo_be_v2.domain.resume.exception.ResumePageIdDuplicatedException;
+import com.example.repo_be_v2.domain.resume.exception.ResumePageIndexDuplicatedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumePageRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeProjectRequest;
@@ -23,9 +25,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -150,6 +154,8 @@ public class ResumeReader {
      * 둘 다 없을 때(새 페이지, id 없이 저장된 옛 데이터)만 새로 발급한다.
      */
     public List<ResumePage> toResumePages(Resume resume, List<ResumePageRequest> pageRequests) {
+        validateNoDuplicatePages(pageRequests);
+
         List<ResumePage> previousPages = resume == null ? List.of() : resume.getPages();
 
         return pageRequests.stream()
@@ -161,6 +167,30 @@ public class ResumeReader {
                         page.content()
                 ))
                 .toList();
+    }
+
+    /**
+     * 같은 위치나 같은 id의 페이지가 두 장이면 막는다.
+     *
+     * 위치가 겹치면 기존 페이지 id를 어느 쪽이 물려받을지 정할 수 없고,
+     * id가 겹치면 그 id에 달린 피드백이 어느 페이지 것인지 알 수 없게 된다.
+     * 비워 보낸 id는 서버가 채우므로 중복으로 보지 않는다.
+     */
+    private void validateNoDuplicatePages(List<ResumePageRequest> pageRequests) {
+        Set<Integer> indexes = new HashSet<>();
+        Set<String> ids = new HashSet<>();
+
+        for (ResumePageRequest page : pageRequests) {
+            if (!indexes.add(page.index())) {
+                throw new ResumePageIndexDuplicatedException();
+            }
+
+            boolean hasId = page.id() != null && !page.id().isBlank();
+
+            if (hasId && !ids.add(page.id())) {
+                throw new ResumePageIdDuplicatedException();
+            }
+        }
     }
 
     //머리말은 프로젝트 페이지에만 있다. 다른 종류로 실려오면 버린다.
