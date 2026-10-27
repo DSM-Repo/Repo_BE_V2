@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 import java.util.List;
 
@@ -89,14 +92,35 @@ public class GlobalExceptionHandler {
     /**
      * 요청 본문을 읽지 못한 경우.
      *
-     * JSON 문법이 깨졌거나, enum에 없는 값이 온 경우가 여기로 온다.
-     * 보낸 쪽 잘못이므로 500이 아니라 400으로 돌려준다.
+     * 본문이 비었거나, JSON 문법이 깨졌거나, 필드 타입이 안 맞는 경우(enum에 없는 값 포함)가 여기로 온다.
+     * 보낸 쪽 잘못이므로 500이 아니라 400으로 돌려주고, 어느 필드인지 알 수 있으면 알려준다.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         log.warn("요청 본문 파싱 실패: {}", e.getMessage());
 
-        return toResponse(ErrorResponse.of(ErrorCode.BAD_REQUEST, "요청 본문을 읽을 수 없습니다."));
+        if (!(e.getCause() instanceof JacksonException cause)) {
+            return toResponse(ErrorResponse.of(ErrorCode.BAD_REQUEST, "요청 본문이 필요합니다."));
+        }
+
+        if (cause instanceof StreamReadException) {
+            return toResponse(ErrorResponse.of(ErrorCode.BAD_REQUEST, "요청 본문의 JSON 형식이 올바르지 않습니다."));
+        }
+
+        String field = fieldPathOf(cause);
+        if (field.isEmpty()) {
+            return toResponse(ErrorResponse.of(ErrorCode.BAD_REQUEST, "요청 본문을 읽을 수 없습니다."));
+        }
+
+        String message = cause instanceof InvalidFormatException invalidFormat && invalidFormat.getTargetType().isEnum()
+                ? "%s 값은 %s 중 하나여야 합니다.".formatted(field, List.of(invalidFormat.getTargetType().getEnumConstants()))
+                : "%s 값의 형식이 올바르지 않습니다.".formatted(field);
+
+        return toResponse(ErrorResponse.of(
+                ErrorCode.BAD_REQUEST,
+                message,
+                List.of(new FieldErrorResponse(field, message))
+        ));
     }
 
     // 지원하지 않는 메서드 호출
@@ -169,5 +193,24 @@ public class GlobalExceptionHandler {
         }
 
         return name;
+    }
+
+    //pages[0].project.startDate처럼 본문 안에서의 위치를 만든다.
+    private String fieldPathOf(JacksonException e) {
+        StringBuilder path = new StringBuilder();
+
+        for (JacksonException.Reference reference : e.getPath()) {
+            if (reference.getPropertyName() == null) {
+                path.append('[').append(reference.getIndex()).append(']');
+                continue;
+            }
+
+            if (!path.isEmpty()) {
+                path.append('.');
+            }
+            path.append(reference.getPropertyName());
+        }
+
+        return path.toString();
     }
 }
