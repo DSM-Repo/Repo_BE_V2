@@ -19,6 +19,10 @@ public enum ErrorCode {
     UNSUPPORTED_MEDIA_TYPE(415, "지원하지 않는 요청 형식입니다."),
     INTERNAL_SERVER_ERROR(500, "내부 서버 오류가 발생했습니다."),
 
+    // auth
+    TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),
+    INVALID_TOKEN(401, "토큰이 올바르지 않습니다."),
+
     // user
     USER_NOT_FOUND(404, "사용자를 찾을 수 없습니다."),
     INVALID_CREDENTIALS(401, "이메일 또는 비밀번호가 올바르지 않습니다."),

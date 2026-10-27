@@ -38,6 +38,7 @@ import java.util.List;
  * 컨트롤러에서 올라온 예외를 공통 에러 응답으로 바꾼다.
  *
  * 보낸 쪽 잘못(4xx)은 흔한 일이라 warn 한 줄만 남기고, 스택 트레이스는 서버 잘못(5xx)일 때만 남긴다.
+ * 필터 단계에서 끝나는 인증 실패는 여기까지 오지 않고 SecurityErrorResponder가 같은 형식으로 응답한다.
  */
 @RestControllerAdvice
 @Slf4j
@@ -217,7 +218,7 @@ public class GlobalExceptionHandler {
         return toResponse(ErrorResponse.of(ErrorCode.NOT_FOUND));
     }
 
-    // 컨트롤러 안쪽에서 올라온 인증 실패
+    // 컨트롤러 안쪽에서 올라온 인증 실패. 필터 단계의 인증 실패는 SecurityErrorResponder가 처리한다.
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException e) {
         log.warn("인증 실패: {}", e.getMessage());
