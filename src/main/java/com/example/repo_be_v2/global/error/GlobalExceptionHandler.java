@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -19,6 +21,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.exc.StreamReadException;
@@ -102,6 +107,12 @@ public class GlobalExceptionHandler {
         return missing("필수 헤더 누락", e.getHeaderName());
     }
 
+    // multipart 요청에 필요한 파트(파일)가 빠진 경우
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> handleMissingServletRequestPartException(MissingServletRequestPartException e) {
+        return missing("필수 파트 누락", e.getRequestPartName());
+    }
+
     // 파라미터 타입 불일치 (숫자 자리에 문자가 온 경우 등)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
@@ -158,6 +169,41 @@ public class GlobalExceptionHandler {
                 ErrorCode.METHOD_NOT_ALLOWED,
                 "%s 메서드는 이 경로에서 지원하지 않습니다.".formatted(e.getMethod())
         ));
+    }
+
+    // 지원하지 않는 Content-Type (JSON 자리에 form을 보낸 경우 등)
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
+        log.warn("지원하지 않는 Content-Type: {}", e.getContentType());
+
+        return toResponse(ErrorResponse.of(
+                ErrorCode.UNSUPPORTED_MEDIA_TYPE,
+                "Content-Type은 %s 중 하나여야 합니다.".formatted(e.getSupportedMediaTypes())
+        ));
+    }
+
+    // 지원하지 않는 Accept
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMediaTypeNotAcceptableException(HttpMediaTypeNotAcceptableException e) {
+        log.warn("지원하지 않는 Accept: {}", e.getMessage());
+
+        return toResponse(ErrorResponse.of(ErrorCode.NOT_ACCEPTABLE));
+    }
+
+    // 업로드 용량 초과
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.warn("업로드 용량 초과: {}", e.getMessage());
+
+        return toResponse(ErrorResponse.of(ErrorCode.PAYLOAD_TOO_LARGE, "업로드할 수 있는 파일 크기를 넘었습니다."));
+    }
+
+    // multipart 요청이 아니거나 형식이 깨진 경우
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ErrorResponse> handleMultipartException(MultipartException e) {
+        log.warn("multipart 요청 처리 실패: {}", e.getMessage());
+
+        return toResponse(ErrorResponse.of(ErrorCode.BAD_REQUEST, "multipart/form-data 형식으로 요청해야 합니다."));
     }
 
     // 존재하지 않는 경로
