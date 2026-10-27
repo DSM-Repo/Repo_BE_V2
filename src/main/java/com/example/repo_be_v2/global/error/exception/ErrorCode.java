@@ -14,6 +14,7 @@ public enum ErrorCode {
     NOT_FOUND(404, "요청한 경로를 찾을 수 없습니다."),
     METHOD_NOT_ALLOWED(405, "지원하지 않는 메서드 형식입니다."),
     NOT_ACCEPTABLE(406, "요청한 응답 형식을 지원하지 않습니다."),
+    CONFLICT(409, "이미 존재하거나 다른 요청과 충돌했습니다."),
     PAYLOAD_TOO_LARGE(413, "요청 크기가 허용 범위를 넘었습니다."),
     UNSUPPORTED_MEDIA_TYPE(415, "지원하지 않는 요청 형식입니다."),
     INTERNAL_SERVER_ERROR(500, "내부 서버 오류가 발생했습니다."),

@@ -6,9 +6,12 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -212,6 +215,35 @@ public class GlobalExceptionHandler {
         log.warn("존재하지 않는 경로 요청: {}", e.getResourcePath());
 
         return toResponse(ErrorResponse.of(ErrorCode.NOT_FOUND));
+    }
+
+    // 컨트롤러 안쪽에서 올라온 인증 실패
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException e) {
+        log.warn("인증 실패: {}", e.getMessage());
+
+        return toResponse(ErrorResponse.of(ErrorCode.UNAUTHORIZED));
+    }
+
+    // 컨트롤러 안쪽에서 올라온 권한 부족. 아래 Exception 핸들러가 먼저 잡아 500으로 바꾸지 않게 따로 받는다.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+        log.warn("권한 부족: {}", e.getMessage());
+
+        return toResponse(ErrorResponse.of(ErrorCode.FORBIDDEN));
+    }
+
+    /**
+     * 유니크 제약에 걸린 경우.
+     *
+     * 서비스에서 미리 중복을 확인해도 동시에 들어온 요청은 저장 단계에서야 걸린다.
+     * 제약 이름 같은 내부 정보가 메시지에 들어 있어 응답에는 싣지 않는다.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        log.warn("데이터 제약 위반: {}", e.getMessage());
+
+        return toResponse(ErrorResponse.of(ErrorCode.CONFLICT));
     }
 
     // 그 외 에러들
