@@ -13,9 +13,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import tools.jackson.core.JacksonException;
@@ -70,10 +72,34 @@ public class GlobalExceptionHandler {
         return validationFailed("파라미터 검증 실패", errors);
     }
 
+    // 파라미터 검증 에러 (컨트롤러 인자에 직접 붙인 @Min, @NotBlank 등)
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
+        List<FieldErrorResponse> errors = e.getParameterValidationResults()
+                .stream()
+                .flatMap(result -> result.getResolvableErrors()
+                        .stream()
+                        .map(error -> new FieldErrorResponse(
+                                error instanceof FieldError fieldError
+                                        ? fieldError.getField()
+                                        : result.getMethodParameter().getParameterName(),
+                                error.getDefaultMessage()
+                        )))
+                .toList();
+
+        return validationFailed("컨트롤러 인자 검증 실패", errors);
+    }
+
     // 필수 쿼리 파라미터 누락
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
         return missing("필수 파라미터 누락", e.getParameterName());
+    }
+
+    // 필수 헤더 누락
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
+        return missing("필수 헤더 누락", e.getHeaderName());
     }
 
     // 파라미터 타입 불일치 (숫자 자리에 문자가 온 경우 등)
