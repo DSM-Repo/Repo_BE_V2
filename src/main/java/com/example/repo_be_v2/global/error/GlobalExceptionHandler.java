@@ -15,6 +15,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * 컨트롤러에서 올라온 예외를 공통 에러 응답으로 바꾼다.
+ *
+ * 보낸 쪽 잘못(4xx)은 흔한 일이라 warn 한 줄만 남기고, 스택 트레이스는 서버 잘못(5xx)일 때만 남긴다.
+ */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -24,7 +29,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusinessException(REPOException e) {
         ErrorCode errorCode = e.getErrorCode();
         ErrorResponse response = ErrorResponse.of(errorCode, e.getMessage());
-        log.error("비즈니스 로직 처리중 에러: ", e);
+
+        if (errorCode.getStatusCode() >= 500) {
+            log.error("비즈니스 로직 처리중 에러: {}", errorCode, e);
+        } else {
+            log.warn("비즈니스 로직 처리중 에러: {} - {}", errorCode, e.getMessage());
+        }
 
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatusCode()));
     }
@@ -34,7 +44,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
         ErrorCode errorCode = ErrorCode.BAD_REQUEST;
         ErrorResponse response = ErrorResponse.of(errorCode, e.getMessage());
-        log.error("유효성 검사 처리중 에러: ", e);
+        log.warn("파라미터 검증 실패: {}", e.getMessage());
 
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatusCode()));
     }
@@ -44,7 +54,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         ErrorCode errorCode = ErrorCode.BAD_REQUEST;
         ErrorResponse response = ErrorResponse.of(errorCode, e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-        log.error("DTO 필드 검증중 에러: ", e);
+        log.warn("DTO 필드 검증 실패: {}", e.getMessage());
 
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatusCode()));
     }
@@ -52,7 +62,7 @@ public class GlobalExceptionHandler {
     // 지원하지 않는 메서드 호출
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        log.error("지원하지 않는 메서드 호출: ", e);
+        log.warn("지원하지 않는 메서드 호출: {}", e.getMethod());
         ErrorCode errorCode = ErrorCode.METHOD_NOT_ALLOWED;
         ErrorResponse response = ErrorResponse.of(errorCode, errorCode.getErrorMessage());
 
@@ -64,7 +74,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
         ErrorCode errorCode = ErrorCode.BAD_REQUEST;
         ErrorResponse response = ErrorResponse.of(errorCode, "%s 값이 필요합니다.".formatted(e.getParameterName()));
-        log.error("필수 파라미터 누락: ", e);
+        log.warn("필수 파라미터 누락: {}", e.getParameterName());
 
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatusCode()));
     }
@@ -74,7 +84,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         ErrorCode errorCode = ErrorCode.BAD_REQUEST;
         ErrorResponse response = ErrorResponse.of(errorCode, "%s 값의 형식이 올바르지 않습니다.".formatted(e.getName()));
-        log.error("파라미터 타입 불일치: ", e);
+        log.warn("파라미터 타입 불일치: {}={}", e.getName(), e.getValue());
 
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatusCode()));
     }
@@ -89,7 +99,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         ErrorCode errorCode = ErrorCode.BAD_REQUEST;
         ErrorResponse response = ErrorResponse.of(errorCode, "요청 본문을 읽을 수 없습니다.");
-        log.error("요청 본문 파싱 실패: ", e);
+        log.warn("요청 본문 파싱 실패: {}", e.getMessage());
 
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatusCode()));
     }
