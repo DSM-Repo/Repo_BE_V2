@@ -12,7 +12,6 @@ import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotSubmittedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumePageIdDuplicatedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumePageIndexDuplicatedException;
-import com.example.repo_be_v2.domain.resume.exception.ResumeProjectDateInvalidException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumePageRequest;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeProjectRequest;
@@ -26,8 +25,6 @@ import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -209,27 +206,9 @@ public class ResumeReader {
                 project.name(),
                 s3Service.toStoredUrl(project.imageUrl()),
                 project.summary(),
-                toDate(project.startDate()),
-                toDate(project.endDate())
+                project.startDate(),
+                project.endDate()
         );
-    }
-
-    /**
-     * 프로젝트 날짜를 바꾼다. 비어 있으면 날짜가 없는 것이다.
-     *
-     * 형식(yyyy-MM-dd)은 요청 검증이 이미 봤다.
-     * 2026-02-30처럼 형식은 맞지만 없는 날짜는 여기서 걸린다.
-     */
-    private LocalDate toDate(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        try {
-            return LocalDate.parse(value);
-        } catch (DateTimeParseException e) {
-            throw new ResumeProjectDateInvalidException();
-        }
     }
 
     private String resolvePageId(List<ResumePage> previousPages, ResumePageRequest request) {

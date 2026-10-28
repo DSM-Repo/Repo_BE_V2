@@ -2,15 +2,14 @@ package com.example.repo_be_v2.domain.resume.presentation.dto.response;
 
 import com.example.repo_be_v2.domain.resume.domain.ResumeProject;
 
-import java.time.LocalDate;
 import java.util.function.UnaryOperator;
 
 public record ResumeProjectResponse(
         String name,
         String imageUrl,
         String summary,
-        LocalDate startDate,
-        LocalDate endDate
+        String startDate,
+        String endDate
 ) {
 
     //이미지는 저장된 URL로는 열 수 없어 toViewUrl로 바꿔 담는다.
