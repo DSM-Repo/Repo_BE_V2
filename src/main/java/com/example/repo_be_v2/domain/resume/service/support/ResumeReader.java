@@ -21,6 +21,7 @@ import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
 import com.example.repo_be_v2.domain.user.exception.TeacherPermissionRequiredException;
 import com.example.repo_be_v2.domain.user.exception.UserNotFoundException;
+import com.example.repo_be_v2.global.s3.MarkdownUrls;
 import com.example.repo_be_v2.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -167,7 +168,7 @@ public class ResumeReader {
                         page.index(),
                         page.type(),
                         toResumeProject(page),
-                        page.content()
+                        MarkdownUrls.replace(page.content(), s3Service::toStoredUrl)
                 ))
                 .toList();
     }

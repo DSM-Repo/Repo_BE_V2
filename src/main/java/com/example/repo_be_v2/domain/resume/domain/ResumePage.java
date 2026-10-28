@@ -25,7 +25,10 @@ public class ResumePage {
     //PROJECT 페이지에만 있다. 나머지 종류에서는 null이다.
     private ResumeProject project;
 
-    //마크다운 원문. 서버는 해석하지 않고 그대로 저장하고 그대로 돌려준다.
+    /**
+     * 마크다운 원문. 서버는 해석하지 않고 그대로 저장하고 그대로 돌려준다.
+     * 단, 본문에 박힌 이 앱의 이미지 URL만은 서명을 떼고 저장하고, 내보낼 때 새로 서명한다. (MarkdownUrls)
+     */
     private String content;
 
     public boolean hasId(String id) {
