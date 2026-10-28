@@ -138,7 +138,7 @@ public class ResumeProgressCalculator {
                 project != null && project.hasName(),
                 project != null && hasText(project.getSummary()),
                 project != null && hasText(project.getImageUrl()),
-                project != null && project.getStartDate() != null && project.getEndDate() != null,
+                project != null && hasText(project.getStartDate()) && hasText(project.getEndDate()),
                 hasText(page.getContent())
         ));
     }
