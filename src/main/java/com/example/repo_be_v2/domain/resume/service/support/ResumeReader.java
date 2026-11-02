@@ -152,16 +152,21 @@ public class ResumeReader {
      * 페이지 id는 피드백이 물고 있는 값이라 저장할 때마다 새로 만들면 안 된다.
      * 요청이 id를 들고 오면 그대로 쓰고,
      * 비워서 보내면 같은 자리에 있던 기존 페이지의 id를 물려받는다.
-     * 둘 다 없을 때(새 페이지, id 없이 저장된 옛 데이터)만 새로 발급한다.
+     * 물려받을 id가 없거나(새 페이지, id 없이 저장된 옛 데이터) 다른 페이지가 이미 쓰고 있으면 새로 발급한다.
+     * 중간에 끼운 새 페이지가 뒤로 밀린 페이지의 id를 가져가면 한 id가 두 장에 저장되기 때문이다.
      */
     public List<ResumePage> toResumePages(Resume resume, List<ResumePageRequest> pageRequests) {
         validateNoDuplicatePages(pageRequests);
 
         List<ResumePage> previousPages = resume == null ? List.of() : resume.getPages();
+        Set<String> usedIds = pageRequests.stream()
+                .filter(this::hasId)
+                .map(ResumePageRequest::id)
+                .collect(Collectors.toCollection(HashSet::new));
 
         return pageRequests.stream()
                 .map(page -> new ResumePage(
-                        resolvePageId(previousPages, page),
+                        resolvePageId(previousPages, page, usedIds),
                         page.index(),
                         page.type(),
                         toResumeProject(page),
@@ -186,9 +191,7 @@ public class ResumeReader {
                 throw new ResumePageIndexDuplicatedException();
             }
 
-            boolean hasId = page.id() != null && !page.id().isBlank();
-
-            if (hasId && !ids.add(page.id())) {
+            if (hasId(page) && !ids.add(page.id())) {
                 throw new ResumePageIdDuplicatedException();
             }
         }
@@ -211,12 +214,17 @@ public class ResumeReader {
         );
     }
 
-    private String resolvePageId(List<ResumePage> previousPages, ResumePageRequest request) {
-        if (request.id() != null && !request.id().isBlank()) {
+    private boolean hasId(ResumePageRequest page) {
+        return page.id() != null && !page.id().isBlank();
+    }
+
+    private String resolvePageId(List<ResumePage> previousPages, ResumePageRequest request, Set<String> usedIds) {
+        if (hasId(request)) {
             return request.id();
         }
 
         return findPreviousPageId(previousPages, request.index())
+                .filter(usedIds::add)
                 .orElseGet(() -> UUID.randomUUID().toString());
     }
 
