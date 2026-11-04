@@ -66,9 +66,19 @@ public class ResumeController {
         return resumeStudentGetService.execute(auth.getId(), studentId);
     }
 
-    //내 이력서 조회
+    //내 이력서 조회. 토큰의 사용자로 찾으므로 이력서 id가 필요 없다.
+    @GetMapping
+    @Operation(summary = "내 이력서 조회", description = "로그인한 사용자의 이력서를 조회합니다. 이력서는 학생당 하나라 이력서 ID 없이 토큰만으로 조회합니다. 아직 이력서를 만들지 않았으면 404를 응답합니다.")
+    @ApiResponse(responseCode = "200", description = "이력서 조회 성공", useReturnTypeSchema = true)
+    public ResumeResponse getMyResume(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth
+    ) {
+        return resumeGetService.execute(auth.getId());
+    }
+
+    //이력서 id로 조회하는 옛 방식. 화면이 GET /resume으로 옮겨 가면 지운다.
     @GetMapping("/{resumeId}")
-    @Operation(summary = "내 이력서 조회", description = "이력서 ID와 로그인한 사용자 ID를 함께 검증하여 본인의 이력서를 조회합니다.")
+    @Operation(summary = "내 이력서 조회 (ID 지정)", deprecated = true, description = "GET /resume을 사용하세요. 이력서 ID와 로그인한 사용자 ID를 함께 검증하여 본인의 이력서를 조회합니다.")
     @ApiResponse(responseCode = "200", description = "이력서 조회 성공", useReturnTypeSchema = true)
     public ResumeResponse getResume(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthDetail auth,
