@@ -1,5 +1,7 @@
 package com.example.repo_be_v2.domain.user.service;
 
+import com.example.repo_be_v2.domain.company.domain.Company;
+import com.example.repo_be_v2.domain.company.domain.repository.CompanyRepository;
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
 import com.example.repo_be_v2.domain.user.exception.InvalidRefreshTokenException;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserTokenRefreshService {
     private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRefreshTokenService refreshTokenService;
 
@@ -26,6 +29,11 @@ public class UserTokenRefreshService {
 
         try {
             Claims claims = jwtTokenProvider.parseRefreshTokenClaims(requestedRefreshToken);
+
+            if (jwtTokenProvider.isCompany(claims)) {
+                return refreshCompany(claims);
+            }
+
             Long userId = Long.valueOf(claims.getSubject());
 
             if (!refreshTokenService.matches(userId, requestedRefreshToken)) {
@@ -40,5 +48,20 @@ public class UserTokenRefreshService {
         } catch (JwtException | NumberFormatException exception) {
             throw new InvalidRefreshTokenException();
         }
+    }
+
+    /**
+     * 기업의 리프레시 토큰은 sub가 tbl_company의 PK라 사용자와 따로 찾는다.
+     *
+     * 여러 담당자가 같은 코드로 동시에 로그인해 쓰므로 Redis의 저장값과 대조하지 않는다. (CompanyLoginService)
+     * 계정이 남아 있는지만 확인하고, 선생님이 계정을 삭제하면 여기서 재발급이 막힌다.
+     */
+    private AccessTokenResponse refreshCompany(Claims claims) {
+        Long companyId = Long.valueOf(claims.getSubject());
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(InvalidRefreshTokenException::new);
+
+        return new AccessTokenResponse(jwtTokenProvider.generateAccessToken(company));
     }
 }
