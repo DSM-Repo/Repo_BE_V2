@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title>Repo 이메일 인증 코드</title>
+  <!-- 웹폰트를 지원하는 클라이언트(Apple Mail 등)에서만 적용, 나머지는 fallback 폰트 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+</head>
+<body style="margin:0; padding:0; background-color:#181819;">
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#181819;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+
+      <!-- 카드 600 x 400 -->
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:100%; max-width:600px; background-color:#181819; border-radius:16px;">
+        <tr>
+          <td align="center" valign="middle" height="400"
+              style="height:400px; padding:0 16px;
+                     font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;">
+
+            <!-- 콘텐츠 378px -->
+            <table role="presentation" width="378" cellpadding="0" cellspacing="0" border="0"
+                   style="width:100%; max-width:378px;">
+
+              <!-- 로고 -->
+              <tr>
+                <td align="center">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td valign="middle" style="padding-right:6px;">
+                        <img th:src="${logoUrl}" src="" width="24" height="24" alt="Repo"
+                             style="display:block; width:24px; height:24px; border:0;">
+                      </td>
+                      <td valign="middle"
+                          style="font-size:24px; font-weight:600; line-height:1.2; color:#ffffff; white-space:nowrap;">
+                        Repo
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- 제목 (gap 8) -->
+              <tr>
+                <td align="center"
+                    style="padding-top:8px; font-size:36px; font-weight:600; line-height:1.2; color:#ffffff; white-space:nowrap;">
+                  이메일 인증 코드
+                </td>
+              </tr>
+
+              <!-- 안내 문구 (gap 12) -->
+              <tr>
+                <td align="center"
+                    style="padding-top:12px; font-size:12px; font-weight:400; line-height:1.2; color:#adb5bd;">
+                  아래의 인증 코드를 <span th:text="${expireMinutes}">5</span>분 이내에 입력해 주세요.
+                </td>
+              </tr>
+
+              <!-- 코드 박스 (gap 36) -->
+              <tr>
+                <td align="center" style="padding-top:36px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0"
+                         style="background-color:#212124; border-radius:6px;">
+                    <tr>
+                      <td style="padding:12px 30px;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                          <tr>
+                            <!-- 숫자 간격 12px = 좌우 padding 6px + 박스 padding 36px(30+6) -->
+                            <td th:each="digit : ${code.toCharArray()}" th:text="${digit}"
+                                align="center"
+                                style="padding:0 6px; font-size:48px; font-weight:600; line-height:1.2; color:#ffffff; white-space:nowrap;">6</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- 하단 안내 (gap 12) -->
+              <tr>
+                <td align="center"
+                    style="padding-top:12px; font-size:12px; font-weight:400; line-height:1.2; color:#495057;">
+                  유효 시간이 지났을 경우, 서비스 화면에서 [재전송] 버튼을 눌러주세요.
+                </td>
+              </tr>
+
+            </table>
+
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
