@@ -2,9 +2,7 @@ package com.example.repo_be_v2.domain.user.service;
 
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
-import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import com.example.repo_be_v2.domain.user.exception.EmailAlreadyExistsException;
-import com.example.repo_be_v2.domain.user.exception.SignUpRoleNotAllowedException;
 import com.example.repo_be_v2.domain.user.presentation.dto.request.UserSignUpRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,11 +18,6 @@ public class UserSignUpService {
 
     @Transactional
     public void execute(UserSignUpRequest request) {
-        //기업 계정은 선생님만 발급한다. 가입 요청에 role을 COMPANY로 넣어 만드는 길을 막는다.
-        if (request.role() == Role.COMPANY) {
-            throw new SignUpRoleNotAllowedException();
-        }
-
         String email = request.email();
         if (userRepository.existsByStudentEmail(email)) {
             throw new EmailAlreadyExistsException();
