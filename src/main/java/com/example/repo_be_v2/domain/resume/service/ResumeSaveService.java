@@ -8,6 +8,7 @@ import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeSaveRequest;
+import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumePageIdResponse;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeSaveResponse;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import com.example.repo_be_v2.global.s3.S3Service;
@@ -75,7 +76,8 @@ public class ResumeSaveService {
     private ResumeSaveResponse toResponse(Resume resume) {
         return new ResumeSaveResponse(
                 resume.getId(),
-                resume.getSavedAt()
+                resume.getSavedAt(),
+                ResumePageIdResponse.listOf(resume.getPages())
         );
     }
 

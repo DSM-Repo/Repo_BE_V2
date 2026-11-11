@@ -28,6 +28,7 @@ public class ResumeAutoSaveService {
         return new ResumeAutoSaveResponse(
                 saved.resumeId(),
                 saved.savedAt(),
+                saved.pages(),
                 true
         );
     }
