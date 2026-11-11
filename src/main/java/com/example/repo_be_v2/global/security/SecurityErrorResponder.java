@@ -1,16 +1,13 @@
 package com.example.repo_be_v2.global.security;
 
-import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import com.example.repo_be_v2.global.error.ErrorResponse;
 import com.example.repo_be_v2.global.error.exception.ErrorCode;
-import com.example.repo_be_v2.global.security.auth.AuthDetail;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -59,12 +56,7 @@ public class SecurityErrorResponder implements AuthenticationEntryPoint, AccessD
             HttpServletResponse response,
             AccessDeniedException accessDeniedException
     ) throws IOException {
-        //기업이 도서관 밖의 API를 부른 경우는 이유를 따로 알려준다.
-        boolean company = request.getUserPrincipal() instanceof Authentication authentication
-                && authentication.getPrincipal() instanceof AuthDetail auth
-                && auth.role() == Role.COMPANY;
-
-        write(request, response, company ? ErrorCode.COMPANY_NOT_ALLOWED : ErrorCode.FORBIDDEN);
+        write(request, response, ErrorCode.FORBIDDEN);
     }
 
     private void write(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode) throws IOException {

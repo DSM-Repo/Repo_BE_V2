@@ -1,7 +1,5 @@
 package com.example.repo_be_v2.domain.user.service;
 
-import com.example.repo_be_v2.domain.company.domain.Company;
-import com.example.repo_be_v2.domain.company.domain.repository.CompanyRepository;
 import com.example.repo_be_v2.domain.user.domain.User;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
 import com.example.repo_be_v2.domain.user.exception.InvalidRefreshTokenException;
@@ -17,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserTokenRefreshService {
     private final UserRepository userRepository;
-    private final CompanyRepository companyRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRefreshTokenService refreshTokenService;
 
@@ -29,11 +26,6 @@ public class UserTokenRefreshService {
 
         try {
             Claims claims = jwtTokenProvider.parseRefreshTokenClaims(requestedRefreshToken);
-
-            if (jwtTokenProvider.isCompany(claims)) {
-                return refreshCompany(claims, requestedRefreshToken);
-            }
-
             Long userId = Long.valueOf(claims.getSubject());
 
             if (!refreshTokenService.matches(userId, requestedRefreshToken)) {
@@ -48,19 +40,5 @@ public class UserTokenRefreshService {
         } catch (JwtException | NumberFormatException exception) {
             throw new InvalidRefreshTokenException();
         }
-    }
-
-    //기업의 리프레시 토큰은 sub가 tbl_company의 PK라 사용자와 따로 찾는다.
-    private AccessTokenResponse refreshCompany(Claims claims, String requestedRefreshToken) {
-        Long companyId = Long.valueOf(claims.getSubject());
-
-        if (!refreshTokenService.matchesForCompany(companyId, requestedRefreshToken)) {
-            throw new InvalidRefreshTokenException();
-        }
-
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(InvalidRefreshTokenException::new);
-
-        return new AccessTokenResponse(jwtTokenProvider.generateAccessToken(company));
     }
 }
