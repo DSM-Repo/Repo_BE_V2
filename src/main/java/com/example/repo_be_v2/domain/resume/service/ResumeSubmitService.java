@@ -11,6 +11,7 @@ import com.example.repo_be_v2.domain.resume.exception.ResumePagesRequiredExcepti
 import com.example.repo_be_v2.domain.resume.exception.ResumeProjectNameRequiredException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumeSaveRequest;
+import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumePageIdResponse;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeSubmitResponse;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import com.example.repo_be_v2.global.s3.S3Service;
@@ -73,7 +74,8 @@ public class ResumeSubmitService {
 
         return new ResumeSubmitResponse(
                 savedResume.getId(),
-                savedResume.getSubmissionStatus()
+                savedResume.getSubmissionStatus(),
+                ResumePageIdResponse.listOf(savedResume.getPages())
         );
     }
 

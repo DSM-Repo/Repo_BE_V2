@@ -3,6 +3,7 @@ package com.example.repo_be_v2.domain.resume.service;
 import com.example.repo_be_v2.domain.resume.domain.Resume;
 import com.example.repo_be_v2.domain.resume.domain.enums.ResumeSubmissionStatus;
 import com.example.repo_be_v2.domain.resume.domain.repository.ResumeRepository;
+import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumePageIdResponse;
 import com.example.repo_be_v2.domain.resume.presentation.dto.response.ResumeSubmitResponse;
 import com.example.repo_be_v2.domain.resume.service.support.ResumeReader;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,8 @@ public class ResumeCancelSubmitService {
 
         return new ResumeSubmitResponse(
                 savedResume.getId(),
-                savedResume.getSubmissionStatus()
+                savedResume.getSubmissionStatus(),
+                ResumePageIdResponse.listOf(savedResume.getPages())
         );
     }
 }

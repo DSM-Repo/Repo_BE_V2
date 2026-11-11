@@ -10,7 +10,6 @@ import com.example.repo_be_v2.domain.resume.domain.repository.ResumeStatusSummar
 import com.example.repo_be_v2.domain.resume.exception.ResumeDeletedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotFoundException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeNotSubmittedException;
-import com.example.repo_be_v2.domain.resume.exception.ResumePageIdDuplicatedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumePageIndexDuplicatedException;
 import com.example.repo_be_v2.domain.resume.exception.ResumeReleasedException;
 import com.example.repo_be_v2.domain.resume.presentation.dto.request.ResumePageRequest;
@@ -26,10 +25,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -150,23 +149,22 @@ public class ResumeReader {
      * 요청 DTO의 페이지 목록을 도메인 객체로 변환한다.
      *
      * 페이지 id는 피드백이 물고 있는 값이라 저장할 때마다 새로 만들면 안 된다.
-     * 요청이 id를 들고 오면 그대로 쓰고,
-     * 비워서 보내면 같은 자리에 있던 기존 페이지의 id를 물려받는다.
-     * 물려받을 id가 없거나(새 페이지, id 없이 저장된 옛 데이터) 다른 페이지가 이미 쓰고 있으면 새로 발급한다.
-     * 중간에 끼운 새 페이지가 뒤로 밀린 페이지의 id를 가져가면 한 id가 두 장에 저장되기 때문이다.
+     * 요청이 id를 들고 오면 그대로 쓰고, 비워서 보내면 새 페이지로 보고 새로 발급한다.
+     *
+     * 비워 보낸 페이지에 같은 자리에 있던 기존 페이지의 id를 물려주지 않는다.
+     * 페이지를 지우고 그 자리에 새 페이지를 만들면 지워진 페이지의 id와 피드백이 엉뚱한 페이지로 넘어가고,
+     * 화면이 실행 취소로 지운 페이지를 되살리면 한 id를 두 페이지가 갖게 되기 때문이다.
+     * 발급한 id는 저장 응답에 실어 주므로 화면은 다음 저장부터 그 id를 보내면 된다.
      */
     public List<ResumePage> toResumePages(Resume resume, List<ResumePageRequest> pageRequests) {
-        validateNoDuplicatePages(pageRequests);
+        validateNoDuplicateIndexes(pageRequests);
 
         List<ResumePage> previousPages = resume == null ? List.of() : resume.getPages();
-        Set<String> usedIds = pageRequests.stream()
-                .filter(this::hasId)
-                .map(ResumePageRequest::id)
-                .collect(Collectors.toCollection(HashSet::new));
+        Map<String, Integer> ownerIndexById = ownerIndexById(previousPages, pageRequests);
 
         return pageRequests.stream()
                 .map(page -> new ResumePage(
-                        resolvePageId(previousPages, page, usedIds),
+                        resolvePageId(page, ownerIndexById),
                         page.index(),
                         page.type(),
                         toResumeProject(page),
@@ -176,25 +174,53 @@ public class ResumeReader {
     }
 
     /**
-     * 같은 위치나 같은 id의 페이지가 두 장이면 막는다.
-     *
-     * 위치가 겹치면 기존 페이지 id를 어느 쪽이 물려받을지 정할 수 없고,
-     * id가 겹치면 그 id에 달린 피드백이 어느 페이지 것인지 알 수 없게 된다.
-     * 비워 보낸 id는 서버가 채우므로 중복으로 보지 않는다.
+     * 같은 위치의 페이지가 두 장이면 막는다. 어느 쪽이 그 자리의 페이지인지 정할 수 없다.
      */
-    private void validateNoDuplicatePages(List<ResumePageRequest> pageRequests) {
+    private void validateNoDuplicateIndexes(List<ResumePageRequest> pageRequests) {
         Set<Integer> indexes = new HashSet<>();
-        Set<String> ids = new HashSet<>();
 
         for (ResumePageRequest page : pageRequests) {
             if (!indexes.add(page.index())) {
                 throw new ResumePageIndexDuplicatedException();
             }
+        }
+    }
 
-            if (hasId(page) && !ids.add(page.id())) {
-                throw new ResumePageIdDuplicatedException();
+    /**
+     * 요청에 실려 온 id마다 그 id를 가질 페이지(의 위치)를 하나씩 정한다.
+     *
+     * 같은 id를 두 페이지가 들고 와도 저장을 거절하지 않는다.
+     * 거절하면 학생은 원인을 알 수도 고칠 수도 없고, 쓴 내용을 저장하지 못한 채 잃는다.
+     * 대신 한 페이지만 그 id를 갖고 나머지는 새로 발급받게 해서 중복을 풀어 준다.
+     *
+     * 저장돼 있던 자리와 같은 자리의 페이지가 있으면 그 페이지가 원래 주인일 가능성이 높아 우선하고,
+     * 없으면 앞쪽 페이지가 갖는다.
+     */
+    private Map<String, Integer> ownerIndexById(List<ResumePage> previousPages, List<ResumePageRequest> pageRequests) {
+        Map<String, Integer> storedIndexById = new HashMap<>();
+        if (previousPages != null) {
+            for (ResumePage page : previousPages) {
+                if (page.getId() != null) {
+                    storedIndexById.putIfAbsent(page.getId(), page.getIndex());
+                }
             }
         }
+
+        Map<String, Integer> ownerIndexById = new HashMap<>();
+        for (ResumePageRequest page : pageRequests) {
+            if (!hasId(page)) {
+                continue;
+            }
+
+            Integer storedIndex = storedIndexById.get(page.id());
+            if (storedIndex != null && storedIndex == page.index()) {
+                ownerIndexById.put(page.id(), page.index());
+            } else {
+                ownerIndexById.putIfAbsent(page.id(), page.index());
+            }
+        }
+
+        return ownerIndexById;
     }
 
     //머리말은 프로젝트 페이지에만 있다. 다른 종류로 실려오면 버린다.
@@ -218,24 +244,12 @@ public class ResumeReader {
         return page.id() != null && !page.id().isBlank();
     }
 
-    private String resolvePageId(List<ResumePage> previousPages, ResumePageRequest request, Set<String> usedIds) {
-        if (hasId(request)) {
+    //id의 주인으로 정해진 페이지만 그 id를 쓴다. 비워 보냈거나 주인이 아니면 새로 발급한다.
+    private String resolvePageId(ResumePageRequest request, Map<String, Integer> ownerIndexById) {
+        if (hasId(request) && ownerIndexById.get(request.id()) == request.index()) {
             return request.id();
         }
 
-        return findPreviousPageId(previousPages, request.index())
-                .filter(usedIds::add)
-                .orElseGet(() -> UUID.randomUUID().toString());
-    }
-
-    private Optional<String> findPreviousPageId(List<ResumePage> previousPages, int index) {
-        if (previousPages == null) {
-            return Optional.empty();
-        }
-
-        return previousPages.stream()
-                .filter(page -> page.getIndex() == index && page.getId() != null)
-                .map(ResumePage::getId)
-                .findFirst();
+        return UUID.randomUUID().toString();
     }
 }
