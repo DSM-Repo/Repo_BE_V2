@@ -34,6 +34,8 @@ public enum ErrorCode {
     EMAIL_SEND_FAILED(500, "인증 메일 전송에 실패했습니다."),
     INVALID_REFRESH_TOKEN(401, "리프레시 토큰이 올바르지 않습니다."),
     TEACHER_PERMISSION_REQUIRED(403, "선생님 권한이 필요합니다."),
+    SIGNUP_ROLE_NOT_ALLOWED(400, "기업 계정은 회원가입으로 만들 수 없습니다. 선생님에게 발급을 요청하세요."),
+    COMPANY_NOT_ALLOWED(403, "기업 계정은 도서관만 이용할 수 있습니다."),
 
     // resume
     RESUME_NOT_FOUND(404, "이력서를 찾을 수 없습니다."),
@@ -62,6 +64,11 @@ public enum ErrorCode {
     MAJOR_NOT_FOUND(404, "전공을 찾을 수 없습니다."),
     MAJOR_ALREADY_EXISTS(409, "이미 존재하는 전공입니다."),
     MAJOR_IN_USE(409, "사용 중인 전공은 삭제할 수 없습니다."),
+
+    // company
+    COMPANY_NOT_FOUND(404, "기업 계정을 찾을 수 없습니다."),
+    COMPANY_ALREADY_EXISTS(409, "같은 이름의 기업 계정이 이미 있습니다."),
+    COMPANY_CODE_INVALID(401, "기업 인증 코드가 올바르지 않습니다."),
 
     // notification
     NOTIFICATION_NOT_FOUND(404, "알림을 찾을 수 없습니다."),

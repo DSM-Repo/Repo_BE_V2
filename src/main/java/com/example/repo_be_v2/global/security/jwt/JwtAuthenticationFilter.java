@@ -1,10 +1,11 @@
 package com.example.repo_be_v2.global.security.jwt;
 
-import com.example.repo_be_v2.domain.user.domain.User;
+import com.example.repo_be_v2.domain.company.domain.repository.CompanyRepository;
 import com.example.repo_be_v2.domain.user.domain.repository.UserRepository;
 import com.example.repo_be_v2.global.error.exception.ErrorCode;
 import com.example.repo_be_v2.global.security.SecurityErrorResponder;
 import com.example.repo_be_v2.global.security.auth.AuthDetail;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -26,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
 
     @Override
     protected void doFilterInternal(
@@ -51,15 +53,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private void authenticate(HttpServletRequest request, String token) {
         try {
-            String studentEmail = jwtTokenProvider.parseAccessTokenClaims(token).getSubject();
-            User user = userRepository.findByStudentEmail(studentEmail).orElse(null);
-            if (user == null) {
-                //토큰은 멀쩡하지만 그 사이 탈퇴한 사용자다.
+            AuthDetail principal = findAccount(jwtTokenProvider.parseAccessTokenClaims(token));
+            if (principal == null) {
+                //토큰은 멀쩡하지만 그 사이 탈퇴했거나 삭제된 계정이다.
                 request.setAttribute(SecurityErrorResponder.ERROR_CODE_ATTRIBUTE, ErrorCode.INVALID_TOKEN);
                 return;
             }
 
-            AuthDetail principal = new AuthDetail(user);
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -70,5 +70,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
             request.setAttribute(SecurityErrorResponder.ERROR_CODE_ATTRIBUTE, ErrorCode.INVALID_TOKEN);
         }
+    }
+
+    /**
+     * 토큰의 주인을 찾는다. 없으면 null이다.
+     *
+     * 기업은 tbl_company에, 학생·선생님은 tbl_user에 있어 토큰의 role로 찾을 곳을 고른다.
+     * 요청마다 다시 찾으므로 선생님이 기업 계정을 삭제하면 남아 있는 토큰도 바로 막힌다.
+     */
+    private AuthDetail findAccount(Claims claims) {
+        //sub는 학생·선생님이면 이메일이고, 이메일이 없는 기업이면 tbl_company의 PK다.
+        if (jwtTokenProvider.isCompany(claims)) {
+            return companyRepository.findById(Long.valueOf(claims.getSubject()))
+                    .map(AuthDetail::from)
+                    .orElse(null);
+        }
+
+        return userRepository.findByStudentEmail(claims.getSubject())
+                .map(AuthDetail::from)
+                .orElse(null);
     }
 }
