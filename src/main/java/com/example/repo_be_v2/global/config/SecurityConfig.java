@@ -1,11 +1,13 @@
 package com.example.repo_be_v2.global.config;
 
+import com.example.repo_be_v2.domain.user.domain.enums.Role;
 import com.example.repo_be_v2.global.security.SecurityErrorResponder;
 import com.example.repo_be_v2.global.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -54,7 +56,11 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/error"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        //기업은 도서관 조회와, 도서관 전공 필터에 쓰는 전공 목록만 볼 수 있다.
+                        .requestMatchers(HttpMethod.GET, "/library/**", "/major")
+                        .hasAnyRole(Role.STUDENT.name(), Role.TEACHER.name(), Role.COMPANY.name())
+                        //그 밖의 모든 API는 학생·선생님만 쓴다. 새 API를 추가해도 기업에게는 기본으로 막힌다.
+                        .anyRequest().hasAnyRole(Role.STUDENT.name(), Role.TEACHER.name())
                 )
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(securityErrorResponder)
